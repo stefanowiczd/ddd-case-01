@@ -30,5 +30,3 @@
 #### Product Management
 - Bank may offer different kind of products or be a broker for some products and services.
 
-
-
