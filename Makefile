@@ -13,7 +13,7 @@ lint:
 	golangci-lint run
 
 build:
-	go build -C cmd
+	go build .
 
 run:
 	go run .
