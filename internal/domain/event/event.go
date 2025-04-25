@@ -6,32 +6,32 @@ import (
 
 // Event represents a domain event
 type Event interface {
-	EventID() string
-	EventType() string
-	AggregateID() string
-	Timestamp() time.Time
+	GetID() string
+	GetType() string
+	GetAggregateID() string
+	GetCreatedAt() time.Time
 }
 
 // BaseEvent provides common fields for all domain events
 type BaseEvent struct {
-	ID             string
-	Type           string
-	Aggregate      string
-	EventTimestamp time.Time
+	ID          string
+	Type        string
+	AggregateID string
+	CreatedAt   time.Time
 }
 
-func (e BaseEvent) EventID() string {
+func (e BaseEvent) GetID() string {
 	return e.ID
 }
 
-func (e BaseEvent) EventType() string {
+func (e BaseEvent) GetType() string {
 	return e.Type
 }
 
-func (e BaseEvent) AggregateID() string {
-	return e.Aggregate
+func (e BaseEvent) GetAggregateID() string {
+	return e.AggregateID
 }
 
-func (e BaseEvent) Timestamp() time.Time {
-	return e.EventTimestamp
+func (e BaseEvent) GetCreatedAt() time.Time {
+	return e.CreatedAt
 }
