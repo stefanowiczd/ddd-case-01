@@ -148,3 +148,73 @@ func Test_Account_Unblock(t *testing.T) {
 		})
 	}
 }
+
+func Test_Account_Deposit(t *testing.T) {
+
+	type testCaseParams struct{}
+
+	type testCaseExpected struct {
+		eventsNumber int
+		eventType    string
+	}
+
+	tests := []struct {
+		name     string
+		params   testCaseParams
+		expected testCaseExpected
+	}{
+		{
+			name:   "should create a new event when depositing funds",
+			params: testCaseParams{},
+			expected: testCaseExpected{
+				eventsNumber: 2,
+				eventType:    AccountFundsDepositedEventType,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			account := NewAccount(testCustomerID(), testAccountNumber(), 0, "USD")
+
+			account.Deposit(404)
+			require.Len(t, account.events, tt.expected.eventsNumber)
+			require.Equal(t, tt.expected.eventType, account.events[1].GetType())
+		})
+	}
+}
+
+func Test_Account_Withdraw(t *testing.T) {
+
+	type testCaseParams struct{}
+
+	type testCaseExpected struct {
+		eventsNumber int
+		eventType    string
+	}
+
+	tests := []struct {
+		name     string
+		params   testCaseParams
+		expected testCaseExpected
+	}{
+		{
+			name:   "should create a new event when withdrawing funds",
+			params: testCaseParams{},
+			expected: testCaseExpected{
+				eventsNumber: 2,
+				eventType:    AccountFundsWithdrawnEventType,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			account := NewAccount(testCustomerID(), testAccountNumber(), 1000, "USD")
+
+			account.Withdraw(404)
+			require.Len(t, account.events, tt.expected.eventsNumber)
+			require.Equal(t, tt.expected.eventType, account.events[1].GetType())
+		})
+	}
+}

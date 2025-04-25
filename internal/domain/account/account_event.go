@@ -9,10 +9,12 @@ import (
 const (
 	AccountCreatedEventType   = "account.created"
 	AccountActivatedEventType = "account.activated"
-	FundsDepositedEventType   = "account.funds.deposited"
-	FundsWithdrawnEventType   = "account.funds.withdrawn"
+
 	AccountBlockedEventType   = "account.blocked"
 	AccountUnblockedEventType = "account.unblocked"
+
+	AccountFundsDepositedEventType = "account.funds.deposited"
+	AccountFundsWithdrawnEventType = "account.funds.withdrawn"
 )
 
 // AccountCreatedEvent is emitted when a new account is created

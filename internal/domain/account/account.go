@@ -71,52 +71,6 @@ func NewAccount(id, number string, initialBalance float64, currency string) *Acc
 	return account
 }
 
-// Deposit adds the specified amount to the account balance.
-// It updates the account's balance and records a deposit event.
-func (a *Account) Deposit(amount float64) {
-	now := time.Now().UTC()
-	a.Balance += amount
-	a.UpdatedAt = now
-
-	a.addEvent(FundsDepositedEvent{
-		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
-			Type:        FundsDepositedEventType,
-			AggregateID: a.ID,
-			CreatedAt:   now,
-		},
-		Amount:   amount,
-		Balance:  a.Balance,
-		Currency: a.Currency,
-	})
-}
-
-// Withdraw subtracts the specified amount from the account balance.
-// It returns an error if there are insufficient funds.
-// On success, it updates the balance and records a withdrawal event.
-func (a *Account) Withdraw(amount float64) error {
-	if a.Balance < amount {
-		return ErrInsufficientFunds
-	}
-	now := time.Now().UTC()
-	a.Balance -= amount
-	a.UpdatedAt = now
-
-	a.addEvent(FundsWithdrawnEvent{
-		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
-			Type:        FundsWithdrawnEventType,
-			AggregateID: a.ID,
-			CreatedAt:   now,
-		},
-		Amount:   amount,
-		Balance:  a.Balance,
-		Currency: a.Currency,
-	})
-
-	return nil
-}
-
 // Block marks the account as blocked, preventing any transactions.
 // It updates the account status and records a blocking event.
 func (a *Account) Block() {
@@ -149,6 +103,52 @@ func (a *Account) Unblock() {
 			CreatedAt:   now,
 		},
 	})
+}
+
+// Deposit adds the specified amount to the account balance.
+// It updates the account's balance and records a deposit event.
+func (a *Account) Deposit(amount float64) {
+	now := time.Now().UTC()
+	a.Balance += amount
+	a.UpdatedAt = now
+
+	a.addEvent(FundsDepositedEvent{
+		BaseEvent: event.BaseEvent{
+			ID:          generateEventID(),
+			Type:        AccountFundsDepositedEventType,
+			AggregateID: a.ID,
+			CreatedAt:   now,
+		},
+		Amount:   amount,
+		Balance:  a.Balance,
+		Currency: a.Currency,
+	})
+}
+
+// Withdraw subtracts the specified amount from the account balance.
+// It returns an error if there are insufficient funds.
+// On success, it updates the balance and records a withdrawal event.
+func (a *Account) Withdraw(amount float64) error {
+	if a.Balance < amount {
+		return ErrInsufficientFunds
+	}
+	now := time.Now().UTC()
+	a.Balance -= amount
+	a.UpdatedAt = now
+
+	a.addEvent(FundsWithdrawnEvent{
+		BaseEvent: event.BaseEvent{
+			ID:          generateEventID(),
+			Type:        AccountFundsWithdrawnEventType,
+			AggregateID: a.ID,
+			CreatedAt:   now,
+		},
+		Amount:   amount,
+		Balance:  a.Balance,
+		Currency: a.Currency,
+	})
+
+	return nil
 }
 
 // GetEvents returns all domain events that have occurred on this account.
