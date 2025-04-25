@@ -1,0 +1,7 @@
+*.out
+*.log
+
+.idea
+
+/app*
+ddd-case-01-*
