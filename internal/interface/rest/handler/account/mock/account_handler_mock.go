@@ -17,6 +17,60 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
+// MockAccountQueryService is a mock of AccountQueryService interface.
+type MockAccountQueryService struct {
+	ctrl     *gomock.Controller
+	recorder *MockAccountQueryServiceMockRecorder
+	isgomock struct{}
+}
+
+// MockAccountQueryServiceMockRecorder is the mock recorder for MockAccountQueryService.
+type MockAccountQueryServiceMockRecorder struct {
+	mock *MockAccountQueryService
+}
+
+// NewMockAccountQueryService creates a new mock instance.
+func NewMockAccountQueryService(ctrl *gomock.Controller) *MockAccountQueryService {
+	mock := &MockAccountQueryService{ctrl: ctrl}
+	mock.recorder = &MockAccountQueryServiceMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAccountQueryService) EXPECT() *MockAccountQueryServiceMockRecorder {
+	return m.recorder
+}
+
+// GetAccount mocks base method.
+func (m *MockAccountQueryService) GetAccount(ctx context.Context, dto account.GetAccountDTO) (account.AccountResponseDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAccount", ctx, dto)
+	ret0, _ := ret[0].(account.AccountResponseDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAccount indicates an expected call of GetAccount.
+func (mr *MockAccountQueryServiceMockRecorder) GetAccount(ctx, dto any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountQueryService)(nil).GetAccount), ctx, dto)
+}
+
+// GetCustomerAccounts mocks base method.
+func (m *MockAccountQueryService) GetCustomerAccounts(ctx context.Context, dto account.GetCustomerAccountsDTO) (account.GetCustomerAccountsResponseDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerAccounts", ctx, dto)
+	ret0, _ := ret[0].(account.GetCustomerAccountsResponseDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerAccounts indicates an expected call of GetCustomerAccounts.
+func (mr *MockAccountQueryServiceMockRecorder) GetCustomerAccounts(ctx, dto any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerAccounts", reflect.TypeOf((*MockAccountQueryService)(nil).GetCustomerAccounts), ctx, dto)
+}
+
 // MockAccountService is a mock of AccountService interface.
 type MockAccountService struct {
 	ctrl     *gomock.Controller
@@ -82,36 +136,6 @@ func (m *MockAccountService) Deposit(ctx context.Context, dto account.DepositDTO
 func (mr *MockAccountServiceMockRecorder) Deposit(ctx, dto any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deposit", reflect.TypeOf((*MockAccountService)(nil).Deposit), ctx, dto)
-}
-
-// GetAccount mocks base method.
-func (m *MockAccountService) GetAccount(ctx context.Context, dto account.GetAccountDTO) (account.AccountResponseDTO, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccount", ctx, dto)
-	ret0, _ := ret[0].(account.AccountResponseDTO)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetAccount indicates an expected call of GetAccount.
-func (mr *MockAccountServiceMockRecorder) GetAccount(ctx, dto any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccount", reflect.TypeOf((*MockAccountService)(nil).GetAccount), ctx, dto)
-}
-
-// GetCustomerAccounts mocks base method.
-func (m *MockAccountService) GetCustomerAccounts(ctx context.Context, dto account.GetCustomerAccountsDTO) (account.GetCustomerAccountsResponseDTO, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCustomerAccounts", ctx, dto)
-	ret0, _ := ret[0].(account.GetCustomerAccountsResponseDTO)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetCustomerAccounts indicates an expected call of GetCustomerAccounts.
-func (mr *MockAccountServiceMockRecorder) GetCustomerAccounts(ctx, dto any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerAccounts", reflect.TypeOf((*MockAccountService)(nil).GetCustomerAccounts), ctx, dto)
 }
 
 // UnblockAccount mocks base method.
