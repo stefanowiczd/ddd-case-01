@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	applicationaccount "github.com/stefanowiczd/ddd-case-01/internal/application/account"
 )
 
@@ -57,8 +56,7 @@ type DepositRequest struct {
 
 // Deposit handles depositing money into an account
 func (h *AccountHandler) Deposit(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["id"]
+	accountID := r.PathValue("id")
 
 	var req DepositRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -84,8 +82,7 @@ type WithdrawRequest struct {
 
 // Withdraw handles withdrawing money from an account
 func (h *AccountHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["id"]
+	accountID := r.PathValue("id")
 
 	var req WithdrawRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -106,8 +103,7 @@ func (h *AccountHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 
 // BlockAccount handles blocking an account
 func (h *AccountHandler) BlockAccount(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["id"]
+	accountID := r.PathValue("id")
 
 	if err := h.accountService.BlockAccount(r.Context(), applicationaccount.BlockAccountDTO{
 		AccountID: accountID,
@@ -121,8 +117,7 @@ func (h *AccountHandler) BlockAccount(w http.ResponseWriter, r *http.Request) {
 
 // UnblockAccount handles unblocking an account
 func (h *AccountHandler) UnblockAccount(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["id"]
+	accountID := r.PathValue("id")
 
 	if err := h.accountService.UnblockAccount(r.Context(), applicationaccount.UnblockAccountDTO{
 		AccountID: accountID,

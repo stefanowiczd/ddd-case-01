@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	applicationaccount "github.com/stefanowiczd/ddd-case-01/internal/application/account"
 )
 
@@ -26,8 +25,7 @@ type GetAccountRequest struct {
 
 // GetAccount handles retrieving an account by ID
 func (h *AccountQueryHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountID := vars["id"]
+	accountID := r.PathValue("id")
 
 	req := &GetAccountRequest{
 		AccountID: accountID,
@@ -51,8 +49,7 @@ type GetCustomerAccountsRequest struct {
 
 // GetCustomerAccounts handles retrieving all accounts for a customer
 func (h *AccountQueryHandler) GetCustomerAccounts(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	customerID := vars["customerId"]
+	customerID := r.PathValue("id")
 
 	req := &GetCustomerAccountsRequest{
 		CustomerID: customerID,

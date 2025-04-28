@@ -12,7 +12,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -257,7 +256,7 @@ func TestAccountHandler_Deposit(t *testing.T) {
 			handler := NewHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/deposit", tt.params.accountID), tt.params.reqBody(tt.params.req))
-			req = mux.SetURLVars(req, map[string]string{"id": tt.params.accountID})
+			req.SetPathValue("id", tt.params.accountID)
 			w := httptest.NewRecorder()
 
 			handler.Deposit(w, req)
@@ -375,7 +374,7 @@ func TestAccountHandler_Withdraw(t *testing.T) {
 			handler := NewHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/withdraw", tt.params.accountID), tt.params.reqBody(tt.params.req))
-			req = mux.SetURLVars(req, map[string]string{"id": tt.params.accountID})
+			req.SetPathValue("id", tt.params.accountID)
 			w := httptest.NewRecorder()
 
 			handler.Withdraw(w, req)
@@ -457,7 +456,7 @@ func TestAccountHandler_BlockAccount(t *testing.T) {
 			handler := NewHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/block", tt.params.accountID), nil)
-			req = mux.SetURLVars(req, map[string]string{"id": tt.params.accountID})
+			req.SetPathValue("id", tt.params.accountID)
 			w := httptest.NewRecorder()
 
 			handler.BlockAccount(w, req)
@@ -539,7 +538,7 @@ func TestAccountHandler_UnblockAccount(t *testing.T) {
 			handler := NewHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/unblock", tt.params.accountID), nil)
-			req = mux.SetURLVars(req, map[string]string{"id": tt.params.accountID})
+			req.SetPathValue("id", tt.params.accountID)
 			w := httptest.NewRecorder()
 
 			handler.UnblockAccount(w, req)
