@@ -20,13 +20,21 @@ func NewQueryHandler(accountQueryService AccountQueryService) *AccountQueryHandl
 	}
 }
 
+type GetAccountRequest struct {
+	AccountID string
+}
+
 // GetAccount handles retrieving an account by ID
 func (h *AccountQueryHandler) GetAccount(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	accountID := vars["id"]
 
-	account, err := h.accountQueryService.GetAccount(r.Context(), applicationaccount.GetAccountDTO{
+	req := &GetAccountRequest{
 		AccountID: accountID,
+	}
+
+	account, err := h.accountQueryService.GetAccount(r.Context(), applicationaccount.GetAccountDTO{
+		AccountID: req.AccountID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
@@ -37,13 +45,21 @@ func (h *AccountQueryHandler) GetAccount(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(account)
 }
 
+type GetCustomerAccountsRequest struct {
+	CustomerID string
+}
+
 // GetCustomerAccounts handles retrieving all accounts for a customer
 func (h *AccountQueryHandler) GetCustomerAccounts(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	customerID := vars["customerId"]
 
-	accounts, err := h.accountQueryService.GetCustomerAccounts(r.Context(), applicationaccount.GetCustomerAccountsDTO{
+	req := &GetCustomerAccountsRequest{
 		CustomerID: customerID,
+	}
+
+	accounts, err := h.accountQueryService.GetCustomerAccounts(r.Context(), applicationaccount.GetCustomerAccountsDTO{
+		CustomerID: req.CustomerID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
