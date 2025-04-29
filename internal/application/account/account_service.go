@@ -69,7 +69,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, dto CreateAccountDTO
 	}
 
 	accountNumber := generateAccountNumber()
-	account := account.NewAccount(uuid.New().String(), dto.CustomerID, accountNumber, dto.InitialBalance, dto.Currency)
+	account := account.NewAccount(uuid.New(), uuid.MustParse(dto.CustomerID), accountNumber, dto.InitialBalance, dto.Currency)
 
 	if err := s.accountEventRepo.CreateEvents(ctx, account.GetEvents()); err != nil {
 		return CreateAccountResponseDTO{}, err
@@ -175,7 +175,7 @@ func (s *AccountService) UnblockAccount(ctx context.Context, dto UnblockAccountD
 // ToDTO converts an Account domain model to AccountResponseDTO
 func ToDTO(account *Account) AccountResponseDTO {
 	return AccountResponseDTO{
-		ID:            account.ID,
+		ID:            account.ID.String(),
 		AccountNumber: account.AccountNumber,
 		Balance:       account.Balance,
 		Currency:      account.Currency,

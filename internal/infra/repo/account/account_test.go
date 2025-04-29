@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -123,8 +124,8 @@ func TestAccountRepository_CreateAccount(t *testing.T) {
 		{
 			name: "successful account creation",
 			account: account.NewAccount(
-				"00000000-0000-0000-0000-000000000002",
-				"00000000-0000-0000-0000-000000000000",
+				uuid.MustParse("00000000-0000-0000-0000-000000000002"),
+				uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				"000000002",
 				100.0,
 				"USD",
@@ -134,8 +135,8 @@ func TestAccountRepository_CreateAccount(t *testing.T) {
 		{
 			name: "duplicate account number",
 			account: account.NewAccount(
-				"00000000-0000-0000-0000-000000000001", // Same account number as above
-				"00000000-0000-0000-0000-000000000000",
+				uuid.MustParse("00000000-0000-0000-0000-000000000001"), // Same account number as above
+				uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				"00000001",
 				200.0,
 				"USD",

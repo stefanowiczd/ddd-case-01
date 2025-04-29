@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,10 +42,10 @@ func (m *MockEvent) EXPECT() *MockEventMockRecorder {
 }
 
 // GetAggregateID mocks base method.
-func (m *MockEvent) GetAggregateID() string {
+func (m *MockEvent) GetAggregateID() uuid.UUID {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAggregateID")
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(uuid.UUID)
 	return ret0
 }
 
@@ -69,10 +70,10 @@ func (mr *MockEventMockRecorder) GetCreatedAt() *gomock.Call {
 }
 
 // GetID mocks base method.
-func (m *MockEvent) GetID() string {
+func (m *MockEvent) GetID() uuid.UUID {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetID")
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(uuid.UUID)
 	return ret0
 }
 

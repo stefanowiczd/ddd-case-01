@@ -2,6 +2,8 @@ package event
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // Event represents a domain event
@@ -14,13 +16,13 @@ type Event interface {
 
 // BaseEvent provides common fields for all domain events
 type BaseEvent struct {
-	ID          string
+	ID          uuid.UUID
 	Type        string
-	AggregateID string
+	AggregateID uuid.UUID
 	CreatedAt   time.Time
 }
 
-func (e BaseEvent) GetID() string {
+func (e BaseEvent) GetID() uuid.UUID {
 	return e.ID
 }
 
@@ -28,7 +30,7 @@ func (e BaseEvent) GetType() string {
 	return e.Type
 }
 
-func (e BaseEvent) GetAggregateID() string {
+func (e BaseEvent) GetAggregateID() uuid.UUID {
 	return e.AggregateID
 }
 

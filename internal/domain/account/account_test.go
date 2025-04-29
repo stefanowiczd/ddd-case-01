@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testAccountID() string {
-	return uuid.New().String()
+func testAccountID() uuid.UUID {
+	return uuid.New()
 }
 
-func testCustomerID() string {
-	return uuid.New().String()
+func testCustomerID() uuid.UUID {
+	return uuid.New()
 }
 
 func testAccountNumber() string {
@@ -26,19 +26,19 @@ func Test_NewAccount(t *testing.T) {
 	id := testCustomerID()
 
 	type testCaseParams struct {
-		accountID     string
+		accountID     uuid.UUID
 		accountNumber string
-		customerID    string
+		customerID    uuid.UUID
 	}
 
 	type testCaseExpected struct {
-		accountID        string
+		accountID        uuid.UUID
 		accountStatus    AccountStatus
 		accountBalance   float64
 		accountCurrency  string
 		eventsNumber     int
 		eventType        string
-		eventAggregateID string
+		eventAggregateID uuid.UUID
 	}
 
 	tests := []struct {

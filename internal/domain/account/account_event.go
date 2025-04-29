@@ -1,8 +1,7 @@
 package account
 
 import (
-	"time"
-
+	"github.com/google/uuid"
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
@@ -50,6 +49,6 @@ type AccountUnblockedEvent struct {
 }
 
 // generateEventID creates a unique identifier for an event based on the current timestamp
-func generateEventID() string {
-	return time.Now().Format("20060102150405.000000000")
+func generateEventID() uuid.UUID {
+	return uuid.New()
 }

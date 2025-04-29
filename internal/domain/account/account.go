@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
@@ -25,8 +26,8 @@ const (
 // It is an aggregate root that manages its own balance and state.
 type Account struct {
 	// AccountBase ??
-	ID            string        // Unique identifier of the account, must be in UUID format
-	CustomerID    string        // Unique identifier of the customer, must be in UUID format
+	ID            uuid.UUID     // Unique identifier of the account, must be in UUID format
+	CustomerID    uuid.UUID     // Unique identifier of the customer, must be in UUID format
 	AccountNumber string        // Account number (e.g., 1234567890)
 	Balance       float64       // Current balance of the account
 	Status        AccountStatus // Current status of the account (active/blocked)
@@ -47,7 +48,7 @@ const (
 
 // NewAccount creates a new account with the given ID and initial balance.
 // It automatically sets the account status to active and records the creation event.
-func NewAccount(id, customerID, number string, initialBalance float64, currency string) *Account {
+func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalance float64, currency string) *Account {
 	now := time.Now().UTC()
 	account := &Account{
 		ID:            id,

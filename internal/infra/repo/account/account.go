@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/google/uuid"
@@ -57,7 +58,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*accoun
 	}
 
 	return &accountdomain.Account{
-		ID:            account.ID.String(),
+		ID:            account.ID.Bytes,
 		AccountNumber: account.AccountNumber,
 		Balance:       account.Balance,
 		Currency:      account.Currency,
@@ -82,7 +83,7 @@ func (r *AccountRepository) FindByAccountNumber(ctx context.Context, accountNumb
 	}
 
 	return &accountdomain.Account{
-		ID:            account.ID.String(),
+		ID:            account.ID.Bytes,
 		AccountNumber: account.AccountNumber,
 		Balance:       account.Balance,
 		Currency:      account.Currency,
@@ -105,7 +106,7 @@ func (r *AccountRepository) FindByCustomerID(ctx context.Context, customerID uui
 	accountsDomain := make([]*accountdomain.Account, 0)
 	for _, account := range accounts {
 		accountsDomain = append(accountsDomain, &accountdomain.Account{
-			ID:            account.ID.String(),
+			ID:            account.ID.Bytes,
 			AccountNumber: account.AccountNumber,
 			Balance:       account.Balance,
 			Currency:      account.Currency,
@@ -128,7 +129,7 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, acc *accountdomai
 	account, err := r.Q.CreateAccount(
 		ctx,
 		query.CreateAccountParams{
-			CustomerID:    pgtype.UUID{Bytes: uuid.MustParse(acc.CustomerID), Valid: true},
+			CustomerID:    pgtype.UUID{Bytes: acc.CustomerID, Valid: true},
 			AccountNumber: acc.AccountNumber,
 			Balance:       acc.Balance,
 			Currency:      acc.Currency,
@@ -153,7 +154,7 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, acc *accountdomai
 	}
 
 	return &accountdomain.Account{
-		ID:            account.ID.String(),
+		ID:            account.ID.Bytes,
 		AccountNumber: account.AccountNumber,
 		Balance:       account.Balance,
 		Currency:      account.Currency,
