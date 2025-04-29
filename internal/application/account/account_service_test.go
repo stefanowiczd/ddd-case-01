@@ -4,6 +4,7 @@ package account
 
 import (
 	"context"
+	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 	"testing"
 
 	"github.com/google/uuid"
@@ -63,7 +64,7 @@ func TestAccountService_CreateAccount(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrInvalidAmount,
+				err:       ErrInvalidInitialBalanceAmount,
 			},
 		},
 	}
@@ -201,7 +202,7 @@ func TestAccountService_Deposit(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrInvalidAmount,
+				err:       ErrInvalidDepositAmount,
 			},
 		},
 		{
@@ -290,7 +291,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 		expected testCaseExpected
 	}{
 		{
-			name: "shouldn't withdraw - invalid amount",
+			name: "unsuccessful money withdraw - invalid amount",
 			params: testCaseParams{
 				dto: WithdrawDTO{
 					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
@@ -305,7 +306,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrInvalidAmount,
+				err:       ErrInvalidWithdrawAmount,
 			},
 		},
 		{
@@ -317,7 +318,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrAccountNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
 					return mock
 				},
 				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
@@ -330,7 +331,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 			},
 		},
 		{
-			name: "should withdraw successfully",
+			name: "successful withdraw",
 			params: testCaseParams{
 				dto: WithdrawDTO{
 					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),

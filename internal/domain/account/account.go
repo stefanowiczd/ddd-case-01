@@ -133,9 +133,6 @@ func (a *Account) Deposit(amount float64) {
 // It returns an error if there are insufficient funds.
 // On success, it updates the balance and records a withdrawal event.
 func (a *Account) Withdraw(amount float64) error {
-	if a.Balance < amount {
-		return ErrInsufficientFunds
-	}
 	now := time.Now().UTC()
 	a.Balance -= amount
 	a.UpdatedAt = now

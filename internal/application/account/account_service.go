@@ -6,20 +6,25 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 )
 
 var (
-	ErrAccountNotFound  = errors.New("account not found")
+	// ErrAccountNotFound is returned when an account is not found.
+	ErrAccountNotFound = errors.New("account not found")
+	// ErrCustomerNotFound is returned when a customer is not found.
 	ErrCustomerNotFound = errors.New("customer not found")
-
-	ErrInvalidAmount = errors.New("invalid amount")
+	// ErrInvalidWithdrawAmount is returned when the withdraw money amount is invalid.
+	ErrInvalidWithdrawAmount = errors.New("invalid withdraw money amount")
+	// ErrInvalidDepositAmount is returned when the deposit money amount is invalid.
+	ErrInvalidDepositAmount = errors.New("invalid deposit money amount")
+	// ErrInvalidInitialBalanceAmount is returned when the initial account balance amount is invalid.
+	ErrInvalidInitialBalanceAmount = errors.New("invalid initial account balance amount")
 )
 
 type Account = accountdomain.Account
 
-// Service handles account-related use cases
+// AccountService handles account-related use cases
 type AccountService struct {
 	accountQueryRepo  AccountQueryRepository
 	customerQueryRepo CustomerQueryRepository
@@ -65,11 +70,11 @@ type CreateAccountResponseDTO struct {
 // CreateAccount creates a new account
 func (s *AccountService) CreateAccount(ctx context.Context, dto CreateAccountDTO) (CreateAccountResponseDTO, error) {
 	if dto.InitialBalance < 0 {
-		return CreateAccountResponseDTO{}, ErrInvalidAmount
+		return CreateAccountResponseDTO{}, ErrInvalidInitialBalanceAmount
 	}
 
 	accountNumber := generateAccountNumber()
-	account := account.NewAccount(uuid.New(), uuid.MustParse(dto.CustomerID), accountNumber, dto.InitialBalance, dto.Currency)
+	account := accountdomain.NewAccount(uuid.New(), uuid.MustParse(dto.CustomerID), accountNumber, dto.InitialBalance, dto.Currency)
 
 	if err := s.accountEventRepo.CreateEvents(ctx, account.GetEvents()); err != nil {
 		return CreateAccountResponseDTO{}, err
@@ -103,7 +108,7 @@ type DepositDTO struct {
 // Deposit adds money to an account
 func (s *AccountService) Deposit(ctx context.Context, dto DepositDTO) error {
 	if dto.Amount <= 0 {
-		return ErrInvalidAmount
+		return ErrInvalidDepositAmount
 	}
 
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
@@ -125,15 +130,14 @@ type WithdrawDTO struct {
 // Withdraw removes money from an account
 func (s *AccountService) Withdraw(ctx context.Context, dto WithdrawDTO) error {
 	if dto.Amount <= 0 {
-		return ErrInvalidAmount
+		return ErrInvalidWithdrawAmount
 	}
 
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
+		// TODO add more precise error check.
 		return ErrAccountNotFound
 	}
-
-	account.Withdraw(dto.Amount)
 
 	return s.accountEventRepo.CreateEvents(ctx, account.GetEvents())
 }
@@ -147,6 +151,7 @@ type BlockAccountDTO struct {
 func (s *AccountService) BlockAccount(ctx context.Context, dto BlockAccountDTO) error {
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
+		// TODO add more precise error check
 		return ErrAccountNotFound
 	}
 
@@ -164,6 +169,7 @@ type UnblockAccountDTO struct {
 func (s *AccountService) UnblockAccount(ctx context.Context, dto UnblockAccountDTO) error {
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
+		// TODO add more precise error check
 		return ErrAccountNotFound
 	}
 
