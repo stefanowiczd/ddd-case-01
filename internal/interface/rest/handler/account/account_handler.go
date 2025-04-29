@@ -61,7 +61,7 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(account)
+	_ = json.NewEncoder(w).Encode(account) // TODO decide about handling of this error.
 }
 
 // DepositRequest represents the request body for depositing money

@@ -54,7 +54,7 @@ func (h *AccountQueryHandler) GetAccount(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(account)
+	_ = json.NewEncoder(w).Encode(account) // TODO decide about handling of this error.
 }
 
 type GetCustomerAccountsRequest struct {
@@ -90,5 +90,5 @@ func (h *AccountQueryHandler) GetCustomerAccounts(w http.ResponseWriter, r *http
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(accounts)
+	_ = json.NewEncoder(w).Encode(accounts) // TODO decide about handling of this error.
 }

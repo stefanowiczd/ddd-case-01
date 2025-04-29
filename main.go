@@ -21,5 +21,5 @@ func main() {
 	)
 
 	server := server.NewServer(server.DefaultConfig(), accountQueryHandler, accountHandler)
-	server.Start()
+	_ = server.Start() // TODO decide about handling of this error.
 }
