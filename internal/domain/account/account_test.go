@@ -10,12 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testAccountNumber() string {
+func testAccountID() string {
 	return uuid.New().String()
 }
 
 func testCustomerID() string {
 	return uuid.New().String()
+}
+
+func testAccountNumber() string {
+	return "0123456789"
 }
 
 func Test_NewAccount(t *testing.T) {
@@ -24,12 +28,13 @@ func Test_NewAccount(t *testing.T) {
 	type testCaseParams struct {
 		accountID     string
 		accountNumber string
+		customerID    string
 	}
 
 	type testCaseExpected struct {
 		accountID        string
 		accountStatus    AccountStatus
-		accountBalance   float32
+		accountBalance   float64
 		accountCurrency  string
 		eventsNumber     int
 		eventType        string
@@ -46,6 +51,7 @@ func Test_NewAccount(t *testing.T) {
 			params: testCaseParams{
 				accountID:     id,
 				accountNumber: testAccountNumber(),
+				customerID:    testCustomerID(),
 			},
 			expected: testCaseExpected{
 				accountID:        id,
@@ -61,7 +67,7 @@ func Test_NewAccount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account := NewAccount(tt.params.accountID, tt.params.accountNumber, 0, "USD")
+			account := NewAccount(tt.params.accountID, tt.params.customerID, tt.params.accountNumber, 0, "USD")
 
 			// Account checks
 			require.Equal(t, tt.expected.accountID, account.ID)
@@ -105,7 +111,7 @@ func Test_Account_Block(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account := NewAccount(testCustomerID(), testAccountNumber(), 0, "USD")
+			account := NewAccount(testAccountID(), testCustomerID(), testAccountNumber(), 0, "USD")
 
 			account.Block()
 			require.Len(t, account.events, tt.expected.eventsNumber)
@@ -140,7 +146,7 @@ func Test_Account_Unblock(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account := NewAccount(testCustomerID(), testAccountNumber(), 0, "USD")
+			account := NewAccount(testAccountID(), testCustomerID(), testAccountNumber(), 0, "USD")
 
 			account.Unblock()
 			require.Len(t, account.events, tt.expected.eventsNumber)
@@ -175,7 +181,7 @@ func Test_Account_Deposit(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account := NewAccount(testCustomerID(), testAccountNumber(), 0, "USD")
+			account := NewAccount(testAccountID(), testCustomerID(), testAccountNumber(), 0, "USD")
 
 			account.Deposit(404)
 			require.Len(t, account.events, tt.expected.eventsNumber)
@@ -210,7 +216,7 @@ func Test_Account_Withdraw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			account := NewAccount(testCustomerID(), testAccountNumber(), 1000, "USD")
+			account := NewAccount(testAccountID(), testCustomerID(), testAccountNumber(), 1000, "USD")
 
 			account.Withdraw(404)
 			require.Len(t, account.events, tt.expected.eventsNumber)

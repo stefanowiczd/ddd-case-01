@@ -20,22 +20,22 @@ const (
 // AccountCreatedEvent is emitted when a new account is created
 type AccountCreatedEvent struct {
 	event.BaseEvent
-	InitialBalance float32 // The initial balance of the account
+	InitialBalance float64 // The initial balance of the account
 }
 
 // FundsDepositedEvent is emitted when funds are deposited into an account
 type FundsDepositedEvent struct {
 	event.BaseEvent
-	Amount   float32 // The amount that was deposited
-	Balance  float32 // The new balance after the deposit
+	Amount   float64 // The amount that was deposited
+	Balance  float64 // The new balance after the deposit
 	Currency string  // The currency of the account
 }
 
 // FundsWithdrawnEvent is emitted when funds are withdrawn from an account
 type FundsWithdrawnEvent struct {
 	event.BaseEvent
-	Amount   float32 // The amount that was withdrawn
-	Balance  float32 // The new balance after the withdrawal
+	Amount   float64 // The amount that was withdrawn
+	Balance  float64 // The new balance after the withdrawal
 	Currency string  // The currency of the account
 }
 
