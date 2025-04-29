@@ -100,6 +100,11 @@ func (r *AccountRepository) FindByCustomerID(ctx context.Context, customerID uui
 		pgtype.UUID{Bytes: customerID, Valid: true},
 	)
 	if err != nil {
+		// TODO change to return empty list if no rows are found
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("finding accounts by customer id: %w", ErrNoRows)
+		}
+
 		return nil, fmt.Errorf("finding accounts by customer id: %w", err)
 	}
 

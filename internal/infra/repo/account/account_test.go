@@ -157,3 +157,40 @@ func TestAccountRepository_CreateAccount(t *testing.T) {
 		})
 	}
 }
+
+func TestAccountRepository_FindByID_NoRows(t *testing.T) {
+	ctx := context.Background()
+	keepContainer := false
+	pool, address := setupTestDB(t, keepContainer)
+
+	log.Printf("container address: %s", address)
+
+	repo := NewAccountRepository(pool)
+
+	acc, err := repo.FindByID(ctx, uuid.MustParse("99999999-0000-0000-0000-000000000000"))
+
+	require.ErrorIs(t, err, account.ErrAccountNotFound)
+	require.Nil(t, acc)
+
+	accs, err := repo.FindByCustomerID(ctx, uuid.MustParse("99999999-0000-0000-0000-000000000000"))
+	require.Len(t, accs, 0)
+}
+
+func TestAccountRepository_FindBy(t *testing.T) {
+	ctx := context.Background()
+	keepContainer := false
+	pool, address := setupTestDB(t, keepContainer)
+
+	log.Printf("container address: %s", address)
+
+	repo := NewAccountRepository(pool)
+
+	acc, err := repo.FindByID(ctx, uuid.MustParse("00000000-0000-0000-0000-000000000000"))
+
+	require.NoError(t, err)
+	require.Nil(t, err)
+	require.NotNil(t, acc)
+
+	accs, err := repo.FindByCustomerID(ctx, uuid.MustParse("00000000-0000-0000-0000-000000000000"))
+	require.Len(t, accs, 1)
+}
