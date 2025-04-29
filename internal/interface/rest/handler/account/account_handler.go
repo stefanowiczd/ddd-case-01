@@ -2,8 +2,10 @@ package account
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	applicationaccount "github.com/stefanowiczd/ddd-case-01/internal/application/account"
 )
 
@@ -26,11 +28,24 @@ type CreateAccountRequest struct {
 	Currency       string  `json:"currency"`
 }
 
+func (r CreateAccountRequest) Validate() error {
+	if _, err := uuid.Parse(r.CustomerID); err != nil {
+		return fmt.Errorf("validate: customer id ass uuid: %w", err)
+	}
+
+	return nil
+}
+
 // CreateAccount handles the creation of a new account
 func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 	var req CreateAccountRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -51,7 +66,16 @@ func (h *AccountHandler) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 // DepositRequest represents the request body for depositing money
 type DepositRequest struct {
-	Amount float64 `json:"amount"`
+	Amount    float64 `json:"amount"`
+	AccountID string
+}
+
+func (r *DepositRequest) Validate() error {
+	if _, err := uuid.Parse(r.AccountID); err != nil {
+		return fmt.Errorf("validate: account id as uuid: %w", err)
+	}
+
+	return nil
 }
 
 // Deposit handles depositing money into an account
@@ -64,8 +88,15 @@ func (h *AccountHandler) Deposit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.AccountID = accountID
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if err := h.accountService.Deposit(r.Context(), applicationaccount.DepositDTO{
-		AccountID: accountID,
+		AccountID: uuid.MustParse(accountID),
 		Amount:    req.Amount,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -77,7 +108,16 @@ func (h *AccountHandler) Deposit(w http.ResponseWriter, r *http.Request) {
 
 // WithdrawRequest represents the request body for withdrawing money
 type WithdrawRequest struct {
-	Amount float64 `json:"amount"`
+	Amount    float64 `json:"amount"`
+	AccountID string
+}
+
+func (r *WithdrawRequest) Validate() error {
+	if _, err := uuid.Parse(r.AccountID); err != nil {
+		return fmt.Errorf("validate: account id as uuid: %w", err)
+	}
+
+	return nil
 }
 
 // Withdraw handles withdrawing money from an account
@@ -90,8 +130,15 @@ func (h *AccountHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req.AccountID = accountID
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	if err := h.accountService.Withdraw(r.Context(), applicationaccount.WithdrawDTO{
-		AccountID: accountID,
+		AccountID: uuid.MustParse(accountID),
 		Amount:    req.Amount,
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,12 +148,32 @@ func (h *AccountHandler) Withdraw(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// BlockAccountRequest represents the request body for blocking an account
+type BlockAccountRequest struct {
+	AccountID string
+}
+
+func (r *BlockAccountRequest) Validate() error {
+	if _, err := uuid.Parse(r.AccountID); err != nil {
+		return fmt.Errorf("validate: account id as uuid: %w", err)
+	}
+
+	return nil
+}
+
 // BlockAccount handles blocking an account
 func (h *AccountHandler) BlockAccount(w http.ResponseWriter, r *http.Request) {
-	accountID := r.PathValue("id")
+	req := BlockAccountRequest{
+		AccountID: r.PathValue("id"),
+	}
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	if err := h.accountService.BlockAccount(r.Context(), applicationaccount.BlockAccountDTO{
-		AccountID: accountID,
+		AccountID: uuid.MustParse(req.AccountID),
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -115,12 +182,32 @@ func (h *AccountHandler) BlockAccount(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// UnblockAccountRequest represents the request body for unblocking an account
+type UnblockAccountRequest struct {
+	AccountID string
+}
+
+func (r *UnblockAccountRequest) Validate() error {
+	if _, err := uuid.Parse(r.AccountID); err != nil {
+		return fmt.Errorf("validate: account id as uuid: %w", err)
+	}
+
+	return nil
+}
+
 // UnblockAccount handles unblocking an account
 func (h *AccountHandler) UnblockAccount(w http.ResponseWriter, r *http.Request) {
-	accountID := r.PathValue("id")
+	req := UnblockAccountRequest{
+		AccountID: r.PathValue("id"),
+	}
+
+	if err := req.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	if err := h.accountService.UnblockAccount(r.Context(), applicationaccount.UnblockAccountDTO{
-		AccountID: accountID,
+		AccountID: uuid.MustParse(req.AccountID),
 	}); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

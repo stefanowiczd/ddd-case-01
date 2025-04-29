@@ -35,10 +35,25 @@ func TestAccountHandler_GetAccount(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "invalid request body",
+			name: "invalid account id format in request path",
 			params: testCaseParams{
 				req: GetAccountRequest{
 					AccountID: "0000",
+				},
+				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
+					return mock.NewMockAccountQueryService(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:  true,
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "unsuccessful account retrieval",
+			params: testCaseParams{
+				req: GetAccountRequest{
+					AccountID: "00000000-0000-0000-0000-000000000000",
 				},
 				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
 					mock := mock.NewMockAccountQueryService(m)
@@ -50,14 +65,14 @@ func TestAccountHandler_GetAccount(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError:  true,
-				statusCode: http.StatusNotFound,
+				statusCode: http.StatusInternalServerError,
 			},
 		},
 		{
-			name: "success",
+			name: "success account retrieval",
 			params: testCaseParams{
 				req: GetAccountRequest{
-					AccountID: "0000",
+					AccountID: "00000000-0000-0000-0000-000000000000",
 				},
 				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
 					mock := mock.NewMockAccountQueryService(m)
@@ -83,6 +98,8 @@ func TestAccountHandler_GetAccount(t *testing.T) {
 			handler := NewQueryHandler(tt.params.mockAccountQueryService(ctrl))
 
 			req := httptest.NewRequest(http.MethodGet, "/account/{id}", nil)
+			req.SetPathValue("id", tt.params.req.AccountID)
+
 			w := httptest.NewRecorder()
 
 			handler.GetAccount(w, req)
@@ -118,10 +135,25 @@ func TestAccountHandler_GetCustomerAccounts(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "invalid request body",
+			name: "invalid customer id format in request path",
 			params: testCaseParams{
 				req: GetCustomerAccountsRequest{
 					CustomerID: "0000",
+				},
+				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
+					return mock.NewMockAccountQueryService(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:  true,
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "unsuccessful customer accounts retrieval",
+			params: testCaseParams{
+				req: GetCustomerAccountsRequest{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
 				},
 				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
 					mock := mock.NewMockAccountQueryService(m)
@@ -137,10 +169,10 @@ func TestAccountHandler_GetCustomerAccounts(t *testing.T) {
 			},
 		},
 		{
-			name: "success",
+			name: "success customer accounts retrieval",
 			params: testCaseParams{
 				req: GetCustomerAccountsRequest{
-					CustomerID: "0000",
+					CustomerID: "00000000-0000-0000-0000-000000000000",
 				},
 				mockAccountQueryService: func(m *gomock.Controller) *mock.MockAccountQueryService {
 					mock := mock.NewMockAccountQueryService(m)
@@ -165,7 +197,9 @@ func TestAccountHandler_GetCustomerAccounts(t *testing.T) {
 
 			handler := NewQueryHandler(tt.params.mockAccountQueryService(ctrl))
 
-			req := httptest.NewRequest(http.MethodGet, "/account/{customerId}", nil)
+			req := httptest.NewRequest(http.MethodGet, "/customers/{customerId}/accounts", nil)
+			req.SetPathValue("customerId", tt.params.req.CustomerID)
+
 			w := httptest.NewRecorder()
 
 			handler.GetCustomerAccounts(w, req)

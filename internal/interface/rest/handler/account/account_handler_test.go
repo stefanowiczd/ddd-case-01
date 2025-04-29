@@ -12,6 +12,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -59,10 +60,31 @@ func TestAccountHandler_CreateAccount(t *testing.T) {
 			},
 		},
 		{
-			name: "unsuccessful create account",
+			name: "invalid customer id in request body",
 			params: testCaseParams{
 				req: CreateAccountRequest{
 					CustomerID:     "customer123",
+					InitialBalance: 100.0,
+					Currency:       "USD",
+				},
+				reqBody: func(r CreateAccountRequest) io.Reader {
+					body, _ := json.Marshal(r)
+					return bytes.NewBuffer(body)
+				},
+				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
+					return mock.NewMockAccountService(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:  true,
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "unsuccessful create account",
+			params: testCaseParams{
+				req: CreateAccountRequest{
+					CustomerID:     "00000000-0000-0000-0000-000000000000",
 					InitialBalance: 100.0,
 					Currency:       "USD",
 				},
@@ -90,7 +112,7 @@ func TestAccountHandler_CreateAccount(t *testing.T) {
 			name: "successful account creation",
 			params: testCaseParams{
 				req: CreateAccountRequest{
-					CustomerID:     "customer123",
+					CustomerID:     "00000000-0000-0000-0000-000000000000",
 					InitialBalance: 100.0,
 					Currency:       "USD",
 				},
@@ -104,7 +126,7 @@ func TestAccountHandler_CreateAccount(t *testing.T) {
 						CreateAccount(
 							gomock.Any(),
 							account.CreateAccountDTO{
-								CustomerID:     "customer123",
+								CustomerID:     "00000000-0000-0000-0000-000000000000",
 								InitialBalance: 100.0,
 								Currency:       "USD",
 							}).
@@ -192,9 +214,29 @@ func TestAccountHandler_Deposit(t *testing.T) {
 			},
 		},
 		{
-			name: "unsuccessful deposit",
+			name: "invalid customer id in request body",
 			params: testCaseParams{
 				accountID: "acc123",
+				req: DepositRequest{
+					Amount: 100.0,
+				},
+				reqBody: func(r DepositRequest) io.Reader {
+					body, _ := json.Marshal(r)
+					return bytes.NewBuffer(body)
+				},
+				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
+					return mock.NewMockAccountService(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:  true,
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "unsuccessful deposit",
+			params: testCaseParams{
+				accountID: "00000000-0000-0000-0000-000000000000",
 				req: DepositRequest{
 					Amount: 100.0,
 				},
@@ -219,7 +261,7 @@ func TestAccountHandler_Deposit(t *testing.T) {
 		{
 			name: "successful deposit",
 			params: testCaseParams{
-				accountID: "acc123",
+				accountID: "00000000-0000-0000-0000-000000000000",
 				req: DepositRequest{
 					Amount: 100.0,
 				},
@@ -233,7 +275,7 @@ func TestAccountHandler_Deposit(t *testing.T) {
 						Deposit(
 							gomock.Any(),
 							account.DepositDTO{
-								AccountID: "acc123",
+								AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 								Amount:    100.0,
 							}).
 						Return(nil)
@@ -310,9 +352,28 @@ func TestAccountHandler_Withdraw(t *testing.T) {
 			},
 		},
 		{
-			name: "unsuccessful withdrawal",
+			name: "invalid account id in request body",
 			params: testCaseParams{
 				accountID: "acc123",
+				req: WithdrawRequest{
+					Amount: 50.0,
+				},
+				reqBody: func(_ WithdrawRequest) io.Reader {
+					return bytes.NewBuffer([]byte(`{ ... invalid json ... `))
+				},
+				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
+					return mock.NewMockAccountService(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:  true,
+				statusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "unsuccessful withdrawal",
+			params: testCaseParams{
+				accountID: "00000000-0000-0000-0000-000000000000",
 				req: WithdrawRequest{
 					Amount: 50.0,
 				},
@@ -337,7 +398,7 @@ func TestAccountHandler_Withdraw(t *testing.T) {
 		{
 			name: "successful withdrawal",
 			params: testCaseParams{
-				accountID: "acc123",
+				accountID: "00000000-0000-0000-0000-000000000000",
 				req: WithdrawRequest{
 					Amount: 50.0,
 				},
@@ -351,7 +412,7 @@ func TestAccountHandler_Withdraw(t *testing.T) {
 						Withdraw(
 							gomock.Any(),
 							account.WithdrawDTO{
-								AccountID: "acc123",
+								AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 								Amount:    50.0,
 							}).
 						Return(nil)
@@ -407,9 +468,22 @@ func TestAccountHandler_BlockAccount(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "unsuccessful account blocking",
+			name: "invalid account id format in request path",
 			params: testCaseParams{
 				accountID: "acc123",
+				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
+					return mock.NewMockAccountService(m)
+				},
+			},
+			expected: testCaseExpected{
+				statusCode: http.StatusBadRequest,
+				wantError:  true,
+			},
+		},
+		{
+			name: "unsuccessful account blocking",
+			params: testCaseParams{
+				accountID: "00000000-0000-0000-0000-000000000000",
 				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
 					mock := mock.NewMockAccountService(m)
 					mock.EXPECT().
@@ -427,14 +501,14 @@ func TestAccountHandler_BlockAccount(t *testing.T) {
 		{
 			name: "successful account blocking",
 			params: testCaseParams{
-				accountID: "acc123",
+				accountID: "00000000-0000-0000-0000-000000000000",
 				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
 					mock := mock.NewMockAccountService(m)
 					mock.EXPECT().
 						BlockAccount(
 							gomock.Any(),
 							account.BlockAccountDTO{
-								AccountID: "acc123",
+								AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 							}).
 						Return(nil)
 
@@ -489,9 +563,22 @@ func TestAccountHandler_UnblockAccount(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "invalid account id format in request path",
+			params: testCaseParams{
+				accountID: "00000000",
+				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
+					return mock.NewMockAccountService(m)
+				},
+			},
+			expected: testCaseExpected{
+				statusCode: http.StatusBadRequest,
+				wantError:  true,
+			},
+		},
+		{
 			name: "unsuccessful account unblocking",
 			params: testCaseParams{
-				accountID: "acc123",
+				accountID: "00000000-0000-0000-0000-000000000000",
 				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
 					mock := mock.NewMockAccountService(m)
 					mock.EXPECT().
@@ -509,14 +596,14 @@ func TestAccountHandler_UnblockAccount(t *testing.T) {
 		{
 			name: "successful account unblocking",
 			params: testCaseParams{
-				accountID: "acc123",
+				accountID: "00000000-0000-0000-0000-000000000000",
 				mockAccountService: func(m *gomock.Controller) *mock.MockAccountService {
 					mock := mock.NewMockAccountService(m)
 					mock.EXPECT().
 						UnblockAccount(
 							gomock.Any(),
 							account.UnblockAccountDTO{
-								AccountID: "acc123",
+								AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 							}).
 						Return(nil)
 

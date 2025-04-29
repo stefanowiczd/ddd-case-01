@@ -42,7 +42,7 @@ func NewService(
 // CreateAccountDTO represents the data needed to create a new account
 type CreateAccountDTO struct {
 	CustomerID     string  `json:"customerId"`
-	InitialBalance float32 `json:"initialBalance"`
+	InitialBalance float64 `json:"initialBalance"`
 	Currency       string  `json:"currency"`
 }
 
@@ -51,7 +51,7 @@ type AccountResponseDTO struct {
 	ID            string  `json:"id"`
 	AccountNumber string  `json:"accountNumber"`
 	CustomerID    string  `json:"customerId"`
-	Balance       float32 `json:"balance"`
+	Balance       float64 `json:"balance"`
 	Currency      string  `json:"currency"`
 	Status        string  `json:"status"`
 	CreatedAt     string  `json:"createdAt"`
@@ -69,7 +69,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, dto CreateAccountDTO
 	}
 
 	accountNumber := generateAccountNumber()
-	account := account.NewAccount(accountNumber, dto.CustomerID, dto.InitialBalance, dto.Currency)
+	account := account.NewAccount(uuid.New().String(), dto.CustomerID, accountNumber, dto.InitialBalance, dto.Currency)
 
 	if err := s.accountEventRepo.CreateEvents(ctx, account.GetEvents()); err != nil {
 		return CreateAccountResponseDTO{}, err
@@ -97,7 +97,7 @@ func (s *AccountService) GetAccount(ctx context.Context, dto GetAccountDTO) (Acc
 // DepositDTO represents the data needed to deposit money
 type DepositDTO struct {
 	AccountID uuid.UUID `json:"accountId"`
-	Amount    float32   `json:"amount"`
+	Amount    float64   `json:"amount"`
 }
 
 // Deposit adds money to an account
@@ -119,7 +119,7 @@ func (s *AccountService) Deposit(ctx context.Context, dto DepositDTO) error {
 // WithdrawDTO represents the data needed to withdraw money
 type WithdrawDTO struct {
 	AccountID uuid.UUID `json:"accountId"`
-	Amount    float32   `json:"amount"`
+	Amount    float64   `json:"amount"`
 }
 
 // Withdraw removes money from an account
