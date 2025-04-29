@@ -12,7 +12,7 @@ type Account struct {
 	ID            pgtype.UUID
 	AccountNumber string
 	CustomerID    pgtype.UUID
-	Balance       pgtype.Numeric
+	Balance       float64
 	Currency      string
 	Status        string
 	CreatedAt     pgtype.Timestamptz

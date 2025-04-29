@@ -11,22 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createAccountStatus = `-- name: CreateAccountStatus :one
+const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (customer_id, account_number, balance, currency, status)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING id, account_number, customer_id, balance, currency, status, created_at, updated_at
 `
 
-type CreateAccountStatusParams struct {
+type CreateAccountParams struct {
 	CustomerID    pgtype.UUID
 	AccountNumber string
-	Balance       pgtype.Numeric
+	Balance       float64
 	Currency      string
 	Status        string
 }
 
-func (q *Queries) CreateAccountStatus(ctx context.Context, arg CreateAccountStatusParams) (Account, error) {
-	row := q.db.QueryRow(ctx, createAccountStatus,
+func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
+	row := q.db.QueryRow(ctx, createAccount,
 		arg.CustomerID,
 		arg.AccountNumber,
 		arg.Balance,
@@ -55,7 +55,7 @@ WHERE id = $1
 
 type DepositAccountMoneyParams struct {
 	ID      pgtype.UUID
-	Balance pgtype.Numeric
+	Balance float64
 }
 
 func (q *Queries) DepositAccountMoney(ctx context.Context, arg DepositAccountMoneyParams) error {
@@ -63,13 +63,55 @@ func (q *Queries) DepositAccountMoney(ctx context.Context, arg DepositAccountMon
 	return err
 }
 
-const getCustomerAccounts = `-- name: GetCustomerAccounts :many
+const findAccountByID = `-- name: FindAccountByID :one
+SELECT id, account_number, customer_id, balance, currency, status, created_at, updated_at FROM accounts
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) FindAccountByID(ctx context.Context, id pgtype.UUID) (Account, error) {
+	row := q.db.QueryRow(ctx, findAccountByID, id)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.AccountNumber,
+		&i.CustomerID,
+		&i.Balance,
+		&i.Currency,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const findAccountByNumber = `-- name: FindAccountByNumber :one
+SELECT id, account_number, customer_id, balance, currency, status, created_at, updated_at FROM accounts
+WHERE account_number = $1 LIMIT 1
+`
+
+func (q *Queries) FindAccountByNumber(ctx context.Context, accountNumber string) (Account, error) {
+	row := q.db.QueryRow(ctx, findAccountByNumber, accountNumber)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.AccountNumber,
+		&i.CustomerID,
+		&i.Balance,
+		&i.Currency,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const findAccountsByCustomerID = `-- name: FindAccountsByCustomerID :many
 SELECT id, account_number, customer_id, balance, currency, status, created_at, updated_at FROM accounts
 WHERE customer_id = $1
 `
 
-func (q *Queries) GetCustomerAccounts(ctx context.Context, customerID pgtype.UUID) ([]Account, error) {
-	rows, err := q.db.Query(ctx, getCustomerAccounts, customerID)
+func (q *Queries) FindAccountsByCustomerID(ctx context.Context, customerID pgtype.UUID) ([]Account, error) {
+	rows, err := q.db.Query(ctx, findAccountsByCustomerID, customerID)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +163,7 @@ WHERE id = $1
 
 type WithdrawAccountMoneyParams struct {
 	ID      pgtype.UUID
-	Balance pgtype.Numeric
+	Balance float64
 }
 
 func (q *Queries) WithdrawAccountMoney(ctx context.Context, arg WithdrawAccountMoneyParams) error {

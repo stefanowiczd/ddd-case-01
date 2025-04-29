@@ -1,12 +1,16 @@
---- name: GetAccount :one
+-- name: FindAccountByID :one
 SELECT * FROM accounts
 WHERE id = $1 LIMIT 1;
 
--- name: GetCustomerAccounts :many
+-- name: FindAccountByNumber :one
+SELECT * FROM accounts
+WHERE account_number = $1 LIMIT 1;
+
+-- name: FindAccountsByCustomerID :many
 SELECT * FROM accounts
 WHERE customer_id = $1;
 
--- name: CreateAccountStatus :one
+-- name: CreateAccount :one
 INSERT INTO accounts (customer_id, account_number, balance, currency, status)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
