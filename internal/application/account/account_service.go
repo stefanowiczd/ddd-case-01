@@ -42,7 +42,7 @@ func NewService(
 // CreateAccountDTO represents the data needed to create a new account
 type CreateAccountDTO struct {
 	CustomerID     string  `json:"customerId"`
-	InitialBalance float64 `json:"initialBalance"`
+	InitialBalance float32 `json:"initialBalance"`
 	Currency       string  `json:"currency"`
 }
 
@@ -51,7 +51,7 @@ type AccountResponseDTO struct {
 	ID            string  `json:"id"`
 	AccountNumber string  `json:"accountNumber"`
 	CustomerID    string  `json:"customerId"`
-	Balance       float64 `json:"balance"`
+	Balance       float32 `json:"balance"`
 	Currency      string  `json:"currency"`
 	Status        string  `json:"status"`
 	CreatedAt     string  `json:"createdAt"`
@@ -81,7 +81,7 @@ func (s *AccountService) CreateAccount(ctx context.Context, dto CreateAccountDTO
 }
 
 type GetAccountDTO struct {
-	AccountID string `json:"accountId"`
+	AccountID uuid.UUID `json:"accountId"`
 }
 
 // GetAccount retrieves an account by its ID
@@ -96,8 +96,8 @@ func (s *AccountService) GetAccount(ctx context.Context, dto GetAccountDTO) (Acc
 
 // DepositDTO represents the data needed to deposit money
 type DepositDTO struct {
-	AccountID string  `json:"accountId"`
-	Amount    float64 `json:"amount"`
+	AccountID uuid.UUID `json:"accountId"`
+	Amount    float32   `json:"amount"`
 }
 
 // Deposit adds money to an account
@@ -118,8 +118,8 @@ func (s *AccountService) Deposit(ctx context.Context, dto DepositDTO) error {
 
 // WithdrawDTO represents the data needed to withdraw money
 type WithdrawDTO struct {
-	AccountID string  `json:"accountId"`
-	Amount    float64 `json:"amount"`
+	AccountID uuid.UUID `json:"accountId"`
+	Amount    float32   `json:"amount"`
 }
 
 // Withdraw removes money from an account
@@ -140,7 +140,7 @@ func (s *AccountService) Withdraw(ctx context.Context, dto WithdrawDTO) error {
 
 // BlockAccountDTO represents the data needed to block an account
 type BlockAccountDTO struct {
-	AccountID string `json:"accountId"`
+	AccountID uuid.UUID `json:"accountId"`
 }
 
 // BlockAccount blocks an account
@@ -157,7 +157,7 @@ func (s *AccountService) BlockAccount(ctx context.Context, dto BlockAccountDTO) 
 
 // UnblockAccountDTO represents the data needed to unblock an account
 type UnblockAccountDTO struct {
-	AccountID string `json:"accountId"`
+	AccountID uuid.UUID `json:"accountId"`
 }
 
 // UnblockAccount unblocks an account
@@ -195,7 +195,7 @@ func ToDTOList(accounts []*Account) []AccountResponseDTO {
 }
 
 type GetCustomerAccountsDTO struct {
-	CustomerID string `json:"customerId"`
+	CustomerID uuid.UUID `json:"customerId"`
 }
 
 type GetCustomerAccountsResponseDTO struct {

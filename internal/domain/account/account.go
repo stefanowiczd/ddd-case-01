@@ -9,6 +9,7 @@ import (
 
 var (
 	ErrInsufficientFunds = errors.New("insufficient funds")
+	ErrAccountNotFound   = errors.New("account not found")
 )
 
 // AccountType represents the type of bank account
@@ -25,8 +26,9 @@ const (
 type Account struct {
 	// AccountBase ??
 	ID            string        // Unique identifier of the account, must be in UUID format
+	CustomerID    string        // Unique identifier of the customer, must be in UUID format
 	AccountNumber string        // Account number (e.g., 1234567890)
-	Balance       float64       // Current balance of the account
+	Balance       float32       // Current balance of the account
 	Status        AccountStatus // Current status of the account (active/blocked)
 	Currency      string        // Currency code (e.g., USD, EUR)
 	CreatedAt     time.Time     // When the account was created
@@ -45,7 +47,7 @@ const (
 
 // NewAccount creates a new account with the given ID and initial balance.
 // It automatically sets the account status to active and records the creation event.
-func NewAccount(id, number string, initialBalance float64, currency string) *Account {
+func NewAccount(id, number string, initialBalance float32, currency string) *Account {
 	now := time.Now().UTC()
 	account := &Account{
 		ID:            id,
@@ -107,7 +109,7 @@ func (a *Account) Unblock() {
 
 // Deposit adds the specified amount to the account balance.
 // It updates the account's balance and records a deposit event.
-func (a *Account) Deposit(amount float64) {
+func (a *Account) Deposit(amount float32) {
 	now := time.Now().UTC()
 	a.Balance += amount
 	a.UpdatedAt = now
@@ -128,7 +130,7 @@ func (a *Account) Deposit(amount float64) {
 // Withdraw subtracts the specified amount from the account balance.
 // It returns an error if there are insufficient funds.
 // On success, it updates the balance and records a withdrawal event.
-func (a *Account) Withdraw(amount float64) error {
+func (a *Account) Withdraw(amount float32) error {
 	if a.Balance < amount {
 		return ErrInsufficientFunds
 	}

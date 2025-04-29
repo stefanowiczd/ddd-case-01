@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -111,7 +112,7 @@ func TestAccountService_GetAccount(t *testing.T) {
 			name: "shouldn't get account",
 			params: testCaseParams{
 				dto: GetAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -128,7 +129,7 @@ func TestAccountService_GetAccount(t *testing.T) {
 			name: "should get account successfully",
 			params: testCaseParams{
 				dto: GetAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -188,7 +189,7 @@ func TestAccountService_Deposit(t *testing.T) {
 			name: "shouldn't deposit - invalid amount",
 			params: testCaseParams{
 				dto: DepositDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    -100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -207,7 +208,7 @@ func TestAccountService_Deposit(t *testing.T) {
 			name: "shouldn't deposit - account not found",
 			params: testCaseParams{
 				dto: DepositDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -228,7 +229,7 @@ func TestAccountService_Deposit(t *testing.T) {
 			name: "should deposit successfully",
 			params: testCaseParams{
 				dto: DepositDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -292,7 +293,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 			name: "shouldn't withdraw - invalid amount",
 			params: testCaseParams{
 				dto: WithdrawDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    -100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -311,7 +312,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 			name: "shouldn't withdraw - account not found",
 			params: testCaseParams{
 				dto: WithdrawDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -332,7 +333,7 @@ func TestAccountService_Withdraw(t *testing.T) {
 			name: "should withdraw successfully",
 			params: testCaseParams{
 				dto: WithdrawDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 					Amount:    100,
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
@@ -396,7 +397,7 @@ func TestAccountService_BlockAccount(t *testing.T) {
 			name: "shouldn't block account - account not found",
 			params: testCaseParams{
 				dto: BlockAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -416,7 +417,7 @@ func TestAccountService_BlockAccount(t *testing.T) {
 			name: "should block account successfully",
 			params: testCaseParams{
 				dto: BlockAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -479,7 +480,7 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 			name: "shouldn't unblock account - account not found",
 			params: testCaseParams{
 				dto: UnblockAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -499,7 +500,7 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 			name: "should unblock account successfully",
 			params: testCaseParams{
 				dto: UnblockAccountDTO{
-					AccountID: "00000000-0000-0000-0000-000000000000",
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
@@ -562,7 +563,7 @@ func TestAccountService_GetCustomerAccounts(t *testing.T) {
 			name: "shouldn't get customer accounts - customer not found",
 			params: testCaseParams{
 				dto: GetCustomerAccountsDTO{
-					CustomerID: "00000000-0000-0000-0000-000000000000",
+					CustomerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					return mock.NewMockAccountQueryRepository(m)
@@ -582,7 +583,7 @@ func TestAccountService_GetCustomerAccounts(t *testing.T) {
 			name: "should get customer accounts successfully",
 			params: testCaseParams{
 				dto: GetCustomerAccountsDTO{
-					CustomerID: "00000000-0000-0000-0000-000000000000",
+					CustomerID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)

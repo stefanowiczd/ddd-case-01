@@ -29,7 +29,7 @@ func Test_NewAccount(t *testing.T) {
 	type testCaseExpected struct {
 		accountID        string
 		accountStatus    AccountStatus
-		accountBalance   float64
+		accountBalance   float32
 		accountCurrency  string
 		eventsNumber     int
 		eventType        string
