@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 	query "github.com/stefanowiczd/ddd-case-01/internal/infra/repo/query"
