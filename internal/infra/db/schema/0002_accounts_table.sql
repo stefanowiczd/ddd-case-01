@@ -17,16 +17,10 @@ CREATE TABLE IF NOT EXISTS account_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     event_type VARCHAR(50) NOT NULL,
+    event_type_version VARCHAR(10) NOT NULL,
     event_data JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT valid_event_type CHECK (event_type IN (
-        'account_created',
-        'deposit_made',
-        'withdrawal_made',
-        'account_blocked',
-        'account_unblocked',
-        'account_closed'
-    ))
+    scheduled_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create indexes

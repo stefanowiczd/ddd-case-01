@@ -20,11 +20,13 @@ type Account struct {
 }
 
 type AccountEvent struct {
-	ID        pgtype.UUID
-	AccountID pgtype.UUID
-	EventType string
-	EventData []byte
-	CreatedAt pgtype.Timestamptz
+	ID               pgtype.UUID
+	AccountID        pgtype.UUID
+	EventType        string
+	EventTypeVersion string
+	EventData        []byte
+	CreatedAt        pgtype.Timestamptz
+	ScheduledAt      pgtype.Timestamptz
 }
 
 type Customer struct {

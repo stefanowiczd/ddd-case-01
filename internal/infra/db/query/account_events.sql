@@ -1,7 +1,11 @@
 -- name: CreateAccountEvent :one
-INSERT INTO account_events (account_id, event_type, event_data)
-VALUES ($1, $2, $3)
+INSERT INTO account_events (account_id, event_type, event_type_version, event_data, scheduled_at)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
+
+-- name: FindAccountEventByID :one
+SELECT * FROM account_events
+WHERE id = $1;
 
 -- name: FindAccountEventsByAccountID :many
 SELECT * FROM account_events
@@ -27,4 +31,3 @@ WHERE created_at BETWEEN $1 AND $2 AND account_id = $3;
 -- name: FindAccountEventsByDateRangeAndAccountIDAndEventType :many
 SELECT * FROM account_events
 WHERE created_at BETWEEN $1 AND $2 AND account_id = $3 AND event_type = $4;
-

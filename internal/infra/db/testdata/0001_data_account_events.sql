@@ -1,0 +1,9 @@
+-- INSERT INTO account_events (
+--     account_id,
+--     event_type,
+--     event_data
+-- ) VALUES (
+--     '00000000-0000-0000-0000-000000000000',
+--     'account_created',
+--     '{"account_number": "1234567890", "balance": 1000.0, "currency": "USD"}'
+-- );
