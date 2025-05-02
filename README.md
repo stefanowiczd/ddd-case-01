@@ -21,11 +21,33 @@ I also tried to leveraged advanced AI-powered coding assistance tools to enhance
   - [golang-lint](https://golangci-lint.run/) - Golang linters
 - [t.b.d.] Apply SAGA pattern for processing events.
 
-## Project Structure:
-- `internal/domain` contains the core business logic and entities
-- `internal/application` contains use cases and application services
-- `internal/infrastructure` contains implementations of repositories and external services
-- `internal/interfaces` contains API handlers and other interfaces
+## Project Structure Tree
+```
+.
+├── internal/
+│   ├── application/
+│   │   ├── account/      // Account service for domain and use case definition
+│   │   ├── customer/     // t.b.d.
+│   │   └── transaction/  // t.b.d.
+│   ├── domain/
+│   │   ├── account/      // Account domain definition
+│   │   ├── customer/     // t.b.d.
+│   │   ├── event/        // Base event definition
+│   │   └── transaction/  // t.b.d.
+│   ├── infra/
+│   │   ├── db/           // DB scheme and queries definition
+│   │   └── repo/
+│   │       ├── query     // Golang code generated with by SQLC related to DB operations
+│   │       └── account   // Account repository code
+│   ├── interface/
+│   │   ├── grpc/         // n.a.
+│   │   ├── rest/         // HTTP server, handlers and route definition,
+│   │   └── stream/       // n.a.
+│   └── tool/
+│       └── sqlc/         // SQLC configuration
+├── orchestrator/         // t.b.d. Orchestrator responsible for events processing
+
+```
 
 ### Core Domains 
 #### Account Management
@@ -37,4 +59,5 @@ I also tried to leveraged advanced AI-powered coding assistance tools to enhance
 - handling financial operations (deposit, withdraw, money transfer, etc.)
 #### [t.b.d.] Product Management
 - Bank may offer different kind of products or be a broker for some products and services.
+
 
