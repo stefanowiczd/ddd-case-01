@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE TABLE IF NOT EXISTS account_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    aggregate_id UUID NOT NULL,
     event_type VARCHAR(50) NOT NULL,
     event_type_version VARCHAR(10) NOT NULL,
     event_state VARCHAR(20) NOT NULL DEFAULT 'inactive',

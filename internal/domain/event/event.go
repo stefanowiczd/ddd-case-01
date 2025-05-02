@@ -31,6 +31,8 @@ const (
 type BaseEvent struct {
 	// ID is the unique identifier for the event
 	ID uuid.UUID `json:"id"`
+	// AccountID is the ID of the account that the event belongs to
+	AccountID uuid.UUID `json:"account_id"`
 	// AggregateID is the ID of the aggregate that the event belongs to
 	AggregateID uuid.UUID `json:"aggregate_id"`
 	// Type is the type of the event
@@ -71,6 +73,10 @@ func NewBaseEvent(id uuid.UUID, t, tv string, aggregateID uuid.UUID, scheduledAt
 
 func (e *BaseEvent) GetID() uuid.UUID {
 	return e.ID
+}
+
+func (e *BaseEvent) GetAccountID() uuid.UUID {
+	return e.AccountID
 }
 
 func (e *BaseEvent) GetAggregateID() uuid.UUID {

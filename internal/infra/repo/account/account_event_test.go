@@ -25,17 +25,21 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 	log.Printf("container address: %s", address)
 
 	repo := NewAccountEventRepository(pool)
-
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
 
 	event := accountdomain.AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
-			Type:        accountdomain.AccountCreatedEventType,
-			TypeVersion: "0.0.1",
+			AccountID:   id,
 			AggregateID: id,
+			Type:        accountdomain.AccountCreatedEventType.String(),
+			TypeVersion: "0.0.1",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   time.Now().UTC(),
 			ScheduledAt: time.Now().UTC(),
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 		InitialBalance: 10,
 	}
@@ -55,13 +59,20 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 	require.Equal(t, event.GetType(), ev.EventType)
 
 	restoredEvent := accountdomain.AccountCreatedEvent{}
-
 	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+
+	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
+	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
-	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
+	require.Equal(t, event.GetState(), restoredEvent.GetState())
 	require.Equal(t, event.GetCreatedAt(), restoredEvent.GetCreatedAt())
+	require.Equal(t, event.GetCompletedAt(), restoredEvent.GetCompletedAt())
 	require.Equal(t, event.GetScheduledAt(), restoredEvent.GetScheduledAt())
+	require.Equal(t, event.GetRetry(), restoredEvent.GetRetry())
+	require.Equal(t, event.GetMaxRetry(), restoredEvent.GetMaxRetry())
+
 	require.Equal(t, event.InitialBalance, restoredEvent.InitialBalance)
 }
 
@@ -74,19 +85,22 @@ func TestAccountEventRepository_AccountBlockEvent(t *testing.T) {
 	log.Printf("container address: %s", address)
 
 	repo := NewAccountEventRepository(pool)
-
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
-	event := accountdomain.AccountCreatedEvent{
+
+	event := accountdomain.AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
-			Type:        accountdomain.AccountBlockedEventType,
-			TypeVersion: "0.0.1",
+			AccountID:   id,
 			AggregateID: id,
+			Type:        accountdomain.AccountBlockedEventType.String(),
+			TypeVersion: "0.0.1",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   time.Now().UTC(),
 			ScheduledAt: time.Now().UTC(),
+			Retry:       0,
+			MaxRetry:    3,
 			Data:        nil,
 		},
-		InitialBalance: 10,
 	}
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
@@ -101,16 +115,21 @@ func TestAccountEventRepository_AccountBlockEvent(t *testing.T) {
 	ev, err = repo.FindAccountEventByID(ctx, ID)
 	require.NoError(t, err)
 	require.NotNil(t, ev)
-	require.Equal(t, event.GetType(), ev.EventType)
 
 	restoredEvent := accountdomain.AccountBlockedEvent{}
-
 	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+
+	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
+	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
-	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
+	require.Equal(t, event.GetState(), restoredEvent.GetState())
 	require.Equal(t, event.GetCreatedAt(), restoredEvent.GetCreatedAt())
+	require.Equal(t, event.GetCompletedAt(), restoredEvent.GetCompletedAt())
 	require.Equal(t, event.GetScheduledAt(), restoredEvent.GetScheduledAt())
+	require.Equal(t, event.GetRetry(), restoredEvent.GetRetry())
+	require.Equal(t, event.GetMaxRetry(), restoredEvent.GetMaxRetry())
 }
 
 func TestAccountEventRepository_AccountUnblockEvent(t *testing.T) {
@@ -122,16 +141,20 @@ func TestAccountEventRepository_AccountUnblockEvent(t *testing.T) {
 	log.Printf("container address: %s", address)
 
 	repo := NewAccountEventRepository(pool)
-
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
-	event := accountdomain.AccountBlockedEvent{
+
+	event := accountdomain.AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
-			Type:        accountdomain.AccountUnblockedEventType,
-			TypeVersion: "0.0.1",
+			AccountID:   id,
 			AggregateID: id,
+			Type:        accountdomain.AccountUnblockedEventType.String(),
+			TypeVersion: "0.0.1",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   time.Now().UTC(),
 			ScheduledAt: time.Now().UTC(),
+			Retry:       0,
+			MaxRetry:    3,
 			Data:        nil,
 		},
 	}
@@ -148,16 +171,22 @@ func TestAccountEventRepository_AccountUnblockEvent(t *testing.T) {
 	ev, err = repo.FindAccountEventByID(ctx, ID)
 	require.NoError(t, err)
 	require.NotNil(t, ev)
-	require.Equal(t, event.GetType(), ev.EventType)
 
 	restoredEvent := accountdomain.AccountUnblockedEvent{}
+	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
 
 	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
+	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
-	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
+	require.Equal(t, event.GetState(), restoredEvent.GetState())
 	require.Equal(t, event.GetCreatedAt(), restoredEvent.GetCreatedAt())
+	require.Equal(t, event.GetCompletedAt(), restoredEvent.GetCompletedAt())
 	require.Equal(t, event.GetScheduledAt(), restoredEvent.GetScheduledAt())
+	require.Equal(t, event.GetRetry(), restoredEvent.GetRetry())
+	require.Equal(t, event.GetMaxRetry(), restoredEvent.GetMaxRetry())
 }
 
 func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
@@ -169,16 +198,20 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	log.Printf("container address: %s", address)
 
 	repo := NewAccountEventRepository(pool)
-
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
+
 	event := accountdomain.FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
-			Type:        accountdomain.AccountFundsWithdrawnEventType,
-			TypeVersion: "0.0.1",
+			AccountID:   id,
 			AggregateID: id,
+			Type:        accountdomain.AccountFundsWithdrawnEventType.String(),
+			TypeVersion: "0.0.1",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   time.Now().UTC(),
 			ScheduledAt: time.Now().UTC(),
+			Retry:       0,
+			MaxRetry:    3,
 			Data:        nil,
 		},
 		Amount:   10,
@@ -198,16 +231,22 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	ev, err = repo.FindAccountEventByID(ctx, ID)
 	require.NoError(t, err)
 	require.NotNil(t, ev)
-	require.Equal(t, event.GetType(), ev.EventType)
 
 	restoredEvent := accountdomain.FundsWithdrawnEvent{}
+	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
 
 	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
+	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
-	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
+	require.Equal(t, event.GetState(), restoredEvent.GetState())
 	require.Equal(t, event.GetCreatedAt(), restoredEvent.GetCreatedAt())
+	require.Equal(t, event.GetCompletedAt(), restoredEvent.GetCompletedAt())
 	require.Equal(t, event.GetScheduledAt(), restoredEvent.GetScheduledAt())
+	require.Equal(t, event.GetRetry(), restoredEvent.GetRetry())
+	require.Equal(t, event.GetMaxRetry(), restoredEvent.GetMaxRetry())
 	require.Equal(t, event.Amount, restoredEvent.Amount)
 	require.Equal(t, event.Balance, restoredEvent.Balance)
 	require.Equal(t, event.Currency, restoredEvent.Currency)
@@ -222,15 +261,16 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	log.Printf("container address: %s", address)
 
 	repo := NewAccountEventRepository(pool)
-
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
+
 	event := accountdomain.FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
+			AccountID:   id,
 			AggregateID: id,
-			Type:        accountdomain.AccountFundsDepositedEventType,
+			Type:        accountdomain.AccountFundsDepositedEventType.String(),
 			TypeVersion: "0.0.1",
-			State:       "scheduled",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   time.Now().UTC(),
 			CompletedAt: time.Time{},
 			ScheduledAt: time.Now().UTC(),
@@ -255,16 +295,22 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	ev, err = repo.FindAccountEventByID(ctx, ID)
 	require.NoError(t, err)
 	require.NotNil(t, ev)
-	require.Equal(t, event.GetType(), ev.EventType)
 
 	restoredEvent := accountdomain.FundsDepositedEvent{}
-
 	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+
+	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
+	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
-	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
+	require.Equal(t, event.GetState(), restoredEvent.GetState())
 	require.Equal(t, event.GetCreatedAt(), restoredEvent.GetCreatedAt())
+	require.Equal(t, event.GetCompletedAt(), restoredEvent.GetCompletedAt())
 	require.Equal(t, event.GetScheduledAt(), restoredEvent.GetScheduledAt())
+	require.Equal(t, event.GetRetry(), restoredEvent.GetRetry())
+	require.Equal(t, event.GetMaxRetry(), restoredEvent.GetMaxRetry())
+
 	require.Equal(t, event.Amount, restoredEvent.Amount)
 	require.Equal(t, event.Balance, restoredEvent.Balance)
 	require.Equal(t, event.Currency, restoredEvent.Currency)

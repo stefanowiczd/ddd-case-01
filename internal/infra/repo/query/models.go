@@ -22,6 +22,7 @@ type Account struct {
 type AccountEvent struct {
 	ID               pgtype.UUID
 	AccountID        pgtype.UUID
+	AggregateID      pgtype.UUID
 	EventType        string
 	EventTypeVersion string
 	EventState       string

@@ -19,6 +19,7 @@ func Test_AccountCreatedEvent(t *testing.T) {
 	event := &AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          id,
+			AccountID:   id,
 			AggregateID: id,
 			Type:        string(AccountCreatedEventType),
 			TypeVersion: "0.0.0",
@@ -42,6 +43,7 @@ func Test_AccountCreatedEvent(t *testing.T) {
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
 	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
@@ -62,6 +64,7 @@ func Test_AccountBlockedEvent(t *testing.T) {
 	event := &AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          id,
+			AccountID:   id,
 			AggregateID: id,
 			Type:        AccountBlockedEventType.String(),
 			TypeVersion: "0.0.0",
@@ -84,6 +87,7 @@ func Test_AccountBlockedEvent(t *testing.T) {
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
 	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
@@ -102,6 +106,7 @@ func Test_AccountUnblockedEvent(t *testing.T) {
 	event := &AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          id,
+			AccountID:   id,
 			AggregateID: id,
 			Type:        AccountUnblockedEventType.String(),
 			TypeVersion: "0.0.0",
@@ -124,6 +129,7 @@ func Test_AccountUnblockedEvent(t *testing.T) {
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
 	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
@@ -142,6 +148,7 @@ func Test_FundsWithdrawnEvent(t *testing.T) {
 	event := &FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          id,
+			AccountID:   id,
 			AggregateID: id,
 			Type:        AccountFundsWithdrawnEventType.String(),
 			TypeVersion: "0.0.0",
@@ -167,6 +174,7 @@ func Test_FundsWithdrawnEvent(t *testing.T) {
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
 	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
@@ -189,6 +197,7 @@ func Test_FundsDepositedEvent(t *testing.T) {
 	event := &FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          id,
+			AccountID:   id,
 			AggregateID: id,
 			Type:        AccountFundsDepositedEventType.String(),
 			TypeVersion: "0.0.0",
@@ -214,6 +223,7 @@ func Test_FundsDepositedEvent(t *testing.T) {
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
+	require.Equal(t, event.GetAccountID(), restoredEvent.GetAccountID())
 	require.Equal(t, event.GetAggregateID(), restoredEvent.GetAggregateID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())

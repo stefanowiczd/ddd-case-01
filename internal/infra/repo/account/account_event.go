@@ -28,8 +28,7 @@ func NewAccountEventRepository(c *pgxpool.Pool) *AccountEventRepository {
 	}
 }
 
-func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventObject AccountEvent) (uuid.UUID, error) {
-
+func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventObject BaseEvent) (uuid.UUID, error) {
 	switch eventObject.(type) {
 	case *accountdomain.AccountCreatedEvent,
 		*accountdomain.AccountBlockedEvent,
@@ -48,7 +47,8 @@ func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventOb
 		accountEvent, err := qtx.CreateAccountEvent(
 			ctx,
 			query.CreateAccountEventParams{
-				AccountID:        pgtype.UUID{Bytes: eventObject.GetAggregateID(), Valid: true},
+				AccountID:        pgtype.UUID{Bytes: eventObject.GetAccountID(), Valid: true},
+				AggregateID:      pgtype.UUID{Bytes: eventObject.GetAggregateID(), Valid: true},
 				EventType:        eventObject.GetType(),
 				EventTypeVersion: eventObject.GetTypeVersion(),
 				EventState:       eventObject.GetState(),
