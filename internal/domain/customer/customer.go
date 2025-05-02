@@ -225,6 +225,26 @@ func (c *Customer) Update(
 		})
 }
 
+func (c *Customer) Delete() {
+	now := time.Now().UTC()
+	c.UpdatedAt = now
+	c.Status = CustomerStatusInactive
+
+	c.Events = append(c.Events, &CustomerDeletedEvent{
+		BaseEvent: event.BaseEvent{
+			ID:          uuid.New(),
+			ContextID:   c.ID,
+			Type:        CustomerDeletedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
+			CreatedAt:   now,
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+		},
+	})
+}
+
 // GetEvents returns all domain events that have occurred on this customer.
 func (c *Customer) GetEvents() []Event {
 	return c.Events

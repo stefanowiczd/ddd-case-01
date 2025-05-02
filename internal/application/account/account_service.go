@@ -183,9 +183,10 @@ func ToDTO(account *Account) AccountResponseDTO {
 	return AccountResponseDTO{
 		ID:            account.ID.String(),
 		AccountNumber: account.AccountNumber,
+		CustomerID:    account.CustomerID.String(),
 		Balance:       account.Balance,
 		Currency:      account.Currency,
-		Status:        string(account.Status),
+		Status:        account.Status.String(),
 		CreatedAt:     account.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:     account.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}

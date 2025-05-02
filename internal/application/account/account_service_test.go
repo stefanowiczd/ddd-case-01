@@ -4,7 +4,7 @@ package account
 
 import (
 	"context"
-	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
+
 	"testing"
 
 	"github.com/google/uuid"
@@ -12,6 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/stefanowiczd/ddd-case-01/internal/application/account/mock"
+	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 	customerdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/customer"
 )
 

@@ -13,7 +13,9 @@ func (e CustomerEventType) String() string {
 }
 
 const (
-	CustomerCreatedEventType     CustomerEventType = "customer.created"
+	CustomerCreatedEventType CustomerEventType = "customer.created"
+	CustomerDeletedEventType CustomerEventType = "customer.deleted"
+
 	CustomerActivatedEventType   CustomerEventType = "customer.activated"
 	CustomerDeactivatedEventType CustomerEventType = "customer.deactivated"
 
@@ -65,4 +67,9 @@ type CustomerUpdatedEvent struct {
 	Phone     string  `json:"phone"`
 	Email     string  `json:"email"`
 	Address   Address `json:"address"`
+}
+
+// CustomerDeletedEvent is emitted when a customer is deleted
+type CustomerDeletedEvent struct {
+	event.BaseEvent
 }

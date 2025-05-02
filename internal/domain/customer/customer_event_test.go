@@ -386,3 +386,33 @@ func Test_CustomerUpdatedEvent_All(t *testing.T) {
 	require.Equal(t, event.Email, restoredEvent.Email)
 	require.Equal(t, event.Address, restoredEvent.Address)
 }
+
+func Test_CustomerDeletedEvent(t *testing.T) {
+	now := time.Now().UTC()
+	eventID := uuid.New()
+	customerID := uuid.New()
+
+	event := &CustomerDeletedEvent{
+		BaseEvent: event.BaseEvent{
+			ID:          eventID,
+			ContextID:   customerID,
+			Type:        CustomerDeletedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       string(event.EventStateCreated),
+			CreatedAt:   now,
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+		},
+	}
+
+	data, err := json.Marshal(event)
+	require.NoError(t, err)
+
+	event.Data = data
+
+	restoredEvent := &CustomerDeletedEvent{}
+	require.NoError(t, json.Unmarshal(event.GetEventData(), restoredEvent))
+
+	compareCustomerBaseEvents(t, event, restoredEvent)
+}
