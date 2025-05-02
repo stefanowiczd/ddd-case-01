@@ -41,34 +41,6 @@ func (m *MockEvent) EXPECT() *MockEventMockRecorder {
 	return m.recorder
 }
 
-// GetAccountID mocks base method.
-func (m *MockEvent) GetAccountID() uuid.UUID {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAccountID")
-	ret0, _ := ret[0].(uuid.UUID)
-	return ret0
-}
-
-// GetAccountID indicates an expected call of GetAccountID.
-func (mr *MockEventMockRecorder) GetAccountID() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountID", reflect.TypeOf((*MockEvent)(nil).GetAccountID))
-}
-
-// GetAggregateID mocks base method.
-func (m *MockEvent) GetAggregateID() uuid.UUID {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAggregateID")
-	ret0, _ := ret[0].(uuid.UUID)
-	return ret0
-}
-
-// GetAggregateID indicates an expected call of GetAggregateID.
-func (mr *MockEventMockRecorder) GetAggregateID() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAggregateID", reflect.TypeOf((*MockEvent)(nil).GetAggregateID))
-}
-
 // GetCompletedAt mocks base method.
 func (m *MockEvent) GetCompletedAt() time.Time {
 	m.ctrl.T.Helper()
@@ -81,6 +53,20 @@ func (m *MockEvent) GetCompletedAt() time.Time {
 func (mr *MockEventMockRecorder) GetCompletedAt() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCompletedAt", reflect.TypeOf((*MockEvent)(nil).GetCompletedAt))
+}
+
+// GetContextID mocks base method.
+func (m *MockEvent) GetContextID() uuid.UUID {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContextID")
+	ret0, _ := ret[0].(uuid.UUID)
+	return ret0
+}
+
+// GetContextID indicates an expected call of GetContextID.
+func (mr *MockEventMockRecorder) GetContextID() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContextID", reflect.TypeOf((*MockEvent)(nil).GetContextID))
 }
 
 // GetCreatedAt mocks base method.

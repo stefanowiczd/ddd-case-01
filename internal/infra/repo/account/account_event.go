@@ -47,8 +47,7 @@ func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventOb
 		accountEvent, err := qtx.CreateAccountEvent(
 			ctx,
 			query.CreateAccountEventParams{
-				AccountID:        pgtype.UUID{Bytes: eventObject.GetAccountID(), Valid: true},
-				AggregateID:      pgtype.UUID{Bytes: eventObject.GetAggregateID(), Valid: true},
+				AccountID:        pgtype.UUID{Bytes: eventObject.GetContextID(), Valid: true},
 				EventType:        eventObject.GetType(),
 				EventTypeVersion: eventObject.GetTypeVersion(),
 				EventState:       eventObject.GetState(),

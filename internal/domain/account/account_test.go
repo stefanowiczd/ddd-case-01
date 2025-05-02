@@ -23,7 +23,8 @@ func testAccountNumber() string {
 }
 
 func Test_NewAccount(t *testing.T) {
-	id := testCustomerID()
+	accountID := testCustomerID()
+	customerID := testAccountID()
 
 	type testCaseParams struct {
 		accountID     uuid.UUID
@@ -32,13 +33,13 @@ func Test_NewAccount(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		accountID        uuid.UUID
-		accountStatus    string
-		accountBalance   float64
-		accountCurrency  string
-		eventsNumber     int
-		eventType        string
-		eventAggregateID uuid.UUID
+		contextID       uuid.UUID
+		customerID      uuid.UUID
+		accountStatus   string
+		accountBalance  float64
+		accountCurrency string
+		eventsNumber    int
+		eventType       string
 	}
 
 	tests := []struct {
@@ -49,18 +50,18 @@ func Test_NewAccount(t *testing.T) {
 		{
 			name: "should create new account with active status",
 			params: testCaseParams{
-				accountID:     id,
+				accountID:     accountID,
+				customerID:    customerID,
 				accountNumber: testAccountNumber(),
-				customerID:    testCustomerID(),
 			},
 			expected: testCaseExpected{
-				accountID:        id,
-				accountBalance:   0.0,
-				accountCurrency:  "USD",
-				accountStatus:    AccountStatusActive.String(),
-				eventsNumber:     1,
-				eventType:        AccountCreatedEventType.String(),
-				eventAggregateID: id,
+				contextID:       accountID,
+				customerID:      customerID,
+				accountBalance:  0.0,
+				accountCurrency: "USD",
+				accountStatus:   AccountStatusActive.String(),
+				eventsNumber:    1,
+				eventType:       AccountCreatedEventType.String(),
 			},
 		},
 	}
@@ -70,7 +71,8 @@ func Test_NewAccount(t *testing.T) {
 			account := NewAccount(tt.params.accountID, tt.params.customerID, tt.params.accountNumber, 0, "USD")
 
 			// Account checks
-			require.Equal(t, tt.expected.accountID, account.ID)
+			require.Equal(t, tt.expected.contextID, account.ID)
+			require.Equal(t, tt.expected.customerID, account.CustomerID)
 			require.Equal(t, tt.expected.accountStatus, account.Status.String())
 			require.Equal(t, tt.expected.accountBalance, account.Balance)
 			require.Equal(t, tt.expected.accountCurrency, account.Currency)
@@ -78,8 +80,8 @@ func Test_NewAccount(t *testing.T) {
 			// Event checks
 			require.Len(t, account.events, tt.expected.eventsNumber)
 			require.Equal(t, tt.expected.eventType, account.events[0].GetType())
-			require.Equal(t, tt.expected.eventAggregateID, account.events[0].GetAggregateID())
-			require.Less(t, account.events[0].GetCreatedAt(), time.Now())
+			require.Equal(t, tt.expected.contextID, account.events[0].GetContextID())
+			require.Less(t, account.events[0].GetCreatedAt(), time.Now().UTC())
 
 		})
 	}

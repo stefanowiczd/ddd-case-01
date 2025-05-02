@@ -13,11 +13,8 @@ type Event interface {
 	// GetID returns the unique identifier of the event
 	GetID() uuid.UUID
 
-	// GetAccountID returns the unique identifier of the account that the event belongs to
-	GetAccountID() uuid.UUID
-
-	// GetAggregateID returns the unique identifier of the aggregate that the event belongs to
-	GetAggregateID() uuid.UUID
+	// GetContextID returns the unique identifier of the context that the event belongs to, i.e. account ID, customer ID, etc.
+	GetContextID() uuid.UUID
 
 	// GetType returns the type of the event
 	GetType() string

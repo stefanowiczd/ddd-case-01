@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
@@ -73,7 +74,7 @@ func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalanc
 	account.addEvent(&AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			AggregateID: id,
+			ContextID:   id,
 			Type:        AccountCreatedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
@@ -85,6 +86,7 @@ func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalanc
 			Data:        nil,
 		},
 		InitialBalance: initialBalance,
+		CustomerID:     customerID,
 	})
 
 	return account
@@ -100,7 +102,7 @@ func (a *Account) Block() {
 	a.addEvent(&AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			AggregateID: a.ID,
+			ContextID:   a.ID,
 			Type:        AccountBlockedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
@@ -124,7 +126,7 @@ func (a *Account) Unblock() {
 	a.addEvent(&AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			AggregateID: a.ID,
+			ContextID:   a.ID,
 			Type:        AccountUnblockedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
@@ -148,7 +150,7 @@ func (a *Account) Deposit(amount float64) {
 	a.addEvent(&FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			AggregateID: a.ID,
+			ContextID:   a.ID,
 			Type:        AccountFundsDepositedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
@@ -176,7 +178,7 @@ func (a *Account) Withdraw(amount float64) error {
 	a.addEvent(&FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			AggregateID: a.ID,
+			ContextID:   a.ID,
 			Type:        AccountFundsWithdrawnEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),

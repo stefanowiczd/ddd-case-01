@@ -27,7 +27,8 @@ const (
 // AccountCreatedEvent is emitted when a new account is created
 type AccountCreatedEvent struct {
 	event.BaseEvent
-	InitialBalance float64 `json:"initial_balance"` // The initial balance of the account
+	CustomerID     uuid.UUID `json:"customer_id"`
+	InitialBalance float64   `json:"initial_balance"` // The initial balance of the account
 }
 
 // FundsDepositedEvent is emitted when funds are deposited into an account

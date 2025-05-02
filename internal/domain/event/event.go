@@ -31,10 +31,8 @@ const (
 type BaseEvent struct {
 	// ID is the unique identifier for the event
 	ID uuid.UUID `json:"id"`
-	// AccountID is the ID of the account that the event belongs to
-	AccountID uuid.UUID `json:"account_id"`
-	// AggregateID is the ID of the aggregate that the event belongs to
-	AggregateID uuid.UUID `json:"aggregate_id"`
+	// ContextID is the ID of the context that the event belongs to, e.g. account ID, customer ID, etc.
+	ContextID uuid.UUID `json:"context_id"`
 	// Type is the type of the event
 	Type string `json:"type"`
 	// TypeVersion is the version of the event type
@@ -56,13 +54,13 @@ type BaseEvent struct {
 	Data []byte `json:"data"`
 }
 
-func NewBaseEvent(id uuid.UUID, t, tv string, aggregateID uuid.UUID, scheduledAt time.Time, maxRetry int) BaseEvent {
+func NewBaseEvent(id, contextID uuid.UUID, t, tv string, scheduledAt time.Time, maxRetry int) BaseEvent {
 	return BaseEvent{
 		ID:          id,
-		AggregateID: aggregateID,
+		ContextID:   contextID,
 		Type:        t,
 		TypeVersion: tv,
-		State:       "inactive",
+		State:       EventStateCreated.String(),
 		CreatedAt:   time.Now().UTC(),
 		ScheduledAt: scheduledAt,
 		Data:        nil,
@@ -75,12 +73,8 @@ func (e *BaseEvent) GetID() uuid.UUID {
 	return e.ID
 }
 
-func (e *BaseEvent) GetAccountID() uuid.UUID {
-	return e.AccountID
-}
-
-func (e *BaseEvent) GetAggregateID() uuid.UUID {
-	return e.AggregateID
+func (e *BaseEvent) GetContextID() uuid.UUID {
+	return e.ContextID
 }
 
 func (e *BaseEvent) GetType() string {
