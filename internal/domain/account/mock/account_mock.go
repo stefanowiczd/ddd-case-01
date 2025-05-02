@@ -17,32 +17,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockEvent is a mock of Event interface.
-type MockEvent struct {
+// MockBaseEvent is a mock of BaseEvent interface.
+type MockBaseEvent struct {
 	ctrl     *gomock.Controller
-	recorder *MockEventMockRecorder
+	recorder *MockBaseEventMockRecorder
 	isgomock struct{}
 }
 
-// MockEventMockRecorder is the mock recorder for MockEvent.
-type MockEventMockRecorder struct {
-	mock *MockEvent
+// MockBaseEventMockRecorder is the mock recorder for MockBaseEvent.
+type MockBaseEventMockRecorder struct {
+	mock *MockBaseEvent
 }
 
-// NewMockEvent creates a new mock instance.
-func NewMockEvent(ctrl *gomock.Controller) *MockEvent {
-	mock := &MockEvent{ctrl: ctrl}
-	mock.recorder = &MockEventMockRecorder{mock}
+// NewMockBaseEvent creates a new mock instance.
+func NewMockBaseEvent(ctrl *gomock.Controller) *MockBaseEvent {
+	mock := &MockBaseEvent{ctrl: ctrl}
+	mock.recorder = &MockBaseEventMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockEvent) EXPECT() *MockEventMockRecorder {
+func (m *MockBaseEvent) EXPECT() *MockBaseEventMockRecorder {
 	return m.recorder
 }
 
 // GetAggregateID mocks base method.
-func (m *MockEvent) GetAggregateID() uuid.UUID {
+func (m *MockBaseEvent) GetAggregateID() uuid.UUID {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAggregateID")
 	ret0, _ := ret[0].(uuid.UUID)
@@ -50,13 +50,13 @@ func (m *MockEvent) GetAggregateID() uuid.UUID {
 }
 
 // GetAggregateID indicates an expected call of GetAggregateID.
-func (mr *MockEventMockRecorder) GetAggregateID() *gomock.Call {
+func (mr *MockBaseEventMockRecorder) GetAggregateID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAggregateID", reflect.TypeOf((*MockEvent)(nil).GetAggregateID))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAggregateID", reflect.TypeOf((*MockBaseEvent)(nil).GetAggregateID))
 }
 
 // GetCreatedAt mocks base method.
-func (m *MockEvent) GetCreatedAt() time.Time {
+func (m *MockBaseEvent) GetCreatedAt() time.Time {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCreatedAt")
 	ret0, _ := ret[0].(time.Time)
@@ -64,13 +64,27 @@ func (m *MockEvent) GetCreatedAt() time.Time {
 }
 
 // GetCreatedAt indicates an expected call of GetCreatedAt.
-func (mr *MockEventMockRecorder) GetCreatedAt() *gomock.Call {
+func (mr *MockBaseEventMockRecorder) GetCreatedAt() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCreatedAt", reflect.TypeOf((*MockEvent)(nil).GetCreatedAt))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCreatedAt", reflect.TypeOf((*MockBaseEvent)(nil).GetCreatedAt))
+}
+
+// GetEventData mocks base method.
+func (m *MockBaseEvent) GetEventData() []byte {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEventData")
+	ret0, _ := ret[0].([]byte)
+	return ret0
+}
+
+// GetEventData indicates an expected call of GetEventData.
+func (mr *MockBaseEventMockRecorder) GetEventData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEventData", reflect.TypeOf((*MockBaseEvent)(nil).GetEventData))
 }
 
 // GetID mocks base method.
-func (m *MockEvent) GetID() uuid.UUID {
+func (m *MockBaseEvent) GetID() uuid.UUID {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetID")
 	ret0, _ := ret[0].(uuid.UUID)
@@ -78,13 +92,69 @@ func (m *MockEvent) GetID() uuid.UUID {
 }
 
 // GetID indicates an expected call of GetID.
-func (mr *MockEventMockRecorder) GetID() *gomock.Call {
+func (mr *MockBaseEventMockRecorder) GetID() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetID", reflect.TypeOf((*MockEvent)(nil).GetID))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetID", reflect.TypeOf((*MockBaseEvent)(nil).GetID))
+}
+
+// GetMaxRetry mocks base method.
+func (m *MockBaseEvent) GetMaxRetry() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMaxRetry")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// GetMaxRetry indicates an expected call of GetMaxRetry.
+func (mr *MockBaseEventMockRecorder) GetMaxRetry() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxRetry", reflect.TypeOf((*MockBaseEvent)(nil).GetMaxRetry))
+}
+
+// GetRetry mocks base method.
+func (m *MockBaseEvent) GetRetry() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRetry")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// GetRetry indicates an expected call of GetRetry.
+func (mr *MockBaseEventMockRecorder) GetRetry() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRetry", reflect.TypeOf((*MockBaseEvent)(nil).GetRetry))
+}
+
+// GetScheduledAt mocks base method.
+func (m *MockBaseEvent) GetScheduledAt() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetScheduledAt")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// GetScheduledAt indicates an expected call of GetScheduledAt.
+func (mr *MockBaseEventMockRecorder) GetScheduledAt() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScheduledAt", reflect.TypeOf((*MockBaseEvent)(nil).GetScheduledAt))
+}
+
+// GetState mocks base method.
+func (m *MockBaseEvent) GetState() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetState")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetState indicates an expected call of GetState.
+func (mr *MockBaseEventMockRecorder) GetState() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetState", reflect.TypeOf((*MockBaseEvent)(nil).GetState))
 }
 
 // GetType mocks base method.
-func (m *MockEvent) GetType() string {
+func (m *MockBaseEvent) GetType() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetType")
 	ret0, _ := ret[0].(string)
@@ -92,7 +162,21 @@ func (m *MockEvent) GetType() string {
 }
 
 // GetType indicates an expected call of GetType.
-func (mr *MockEventMockRecorder) GetType() *gomock.Call {
+func (mr *MockBaseEventMockRecorder) GetType() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetType", reflect.TypeOf((*MockEvent)(nil).GetType))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetType", reflect.TypeOf((*MockBaseEvent)(nil).GetType))
+}
+
+// GetTypeVersion mocks base method.
+func (m *MockBaseEvent) GetTypeVersion() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTypeVersion")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetTypeVersion indicates an expected call of GetTypeVersion.
+func (mr *MockBaseEventMockRecorder) GetTypeVersion() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTypeVersion", reflect.TypeOf((*MockBaseEvent)(nil).GetTypeVersion))
 }

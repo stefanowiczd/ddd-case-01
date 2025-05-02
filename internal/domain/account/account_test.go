@@ -33,7 +33,7 @@ func Test_NewAccount(t *testing.T) {
 
 	type testCaseExpected struct {
 		accountID        uuid.UUID
-		accountStatus    AccountStatus
+		accountStatus    string
 		accountBalance   float64
 		accountCurrency  string
 		eventsNumber     int
@@ -57,9 +57,9 @@ func Test_NewAccount(t *testing.T) {
 				accountID:        id,
 				accountBalance:   0.0,
 				accountCurrency:  "USD",
-				accountStatus:    AccountStatusActive,
+				accountStatus:    AccountStatusActive.String(),
 				eventsNumber:     1,
-				eventType:        AccountCreatedEventType,
+				eventType:        AccountCreatedEventType.String(),
 				eventAggregateID: id,
 			},
 		},
@@ -71,7 +71,7 @@ func Test_NewAccount(t *testing.T) {
 
 			// Account checks
 			require.Equal(t, tt.expected.accountID, account.ID)
-			require.Equal(t, tt.expected.accountStatus, account.Status)
+			require.Equal(t, tt.expected.accountStatus, account.Status.String())
 			require.Equal(t, tt.expected.accountBalance, account.Balance)
 			require.Equal(t, tt.expected.accountCurrency, account.Currency)
 
@@ -104,7 +104,7 @@ func Test_Account_Block(t *testing.T) {
 			params: testCaseParams{},
 			expected: testCaseExpected{
 				eventsNumber: 2,
-				eventType:    AccountBlockedEventType,
+				eventType:    AccountBlockedEventType.String(),
 			},
 		},
 	}
@@ -139,7 +139,7 @@ func Test_Account_Unblock(t *testing.T) {
 			params: testCaseParams{},
 			expected: testCaseExpected{
 				eventsNumber: 2,
-				eventType:    AccountUnblockedEventType,
+				eventType:    AccountUnblockedEventType.String(),
 			},
 		},
 	}
@@ -174,7 +174,7 @@ func Test_Account_Deposit(t *testing.T) {
 			params: testCaseParams{},
 			expected: testCaseExpected{
 				eventsNumber: 2,
-				eventType:    AccountFundsDepositedEventType,
+				eventType:    AccountFundsDepositedEventType.String(),
 			},
 		},
 	}
@@ -209,7 +209,7 @@ func Test_Account_Withdraw(t *testing.T) {
 			params: testCaseParams{},
 			expected: testCaseExpected{
 				eventsNumber: 2,
-				eventType:    AccountFundsWithdrawnEventType,
+				eventType:    AccountFundsWithdrawnEventType.String(),
 			},
 		},
 	}

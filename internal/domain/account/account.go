@@ -16,6 +16,10 @@ var (
 // AccountType represents the type of bank account
 type AccountType string
 
+func (a AccountType) String() string {
+	return string(a)
+}
+
 const (
 	AccountTypeSavings  AccountType = "savings"
 	AccountTypeChecking AccountType = "checking"
@@ -46,6 +50,10 @@ const (
 	AccountStatusBlocked  AccountStatus = "blocked"  // Account is blocked and cannot perform transactions
 )
 
+func (s AccountStatus) String() string {
+	return string(s)
+}
+
 // NewAccount creates a new account with the given ID and initial balance.
 // It automatically sets the account status to active and records the creation event.
 func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalance float64, currency string) *Account {
@@ -62,12 +70,19 @@ func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalanc
 		events:        make([]Event, 0),
 	}
 
-	account.addEvent(AccountCreatedEvent{
+	account.addEvent(&AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			Type:        AccountCreatedEventType,
 			AggregateID: id,
+			Type:        AccountCreatedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
+			CompletedAt: time.Time{},
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 		InitialBalance: initialBalance,
 	})
@@ -82,12 +97,19 @@ func (a *Account) Block() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusBlocked
 
-	a.addEvent(AccountBlockedEvent{
+	a.addEvent(&AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			Type:        AccountBlockedEventType,
 			AggregateID: a.ID,
+			Type:        AccountBlockedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
+			CompletedAt: time.Time{},
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 	})
 }
@@ -99,12 +121,19 @@ func (a *Account) Unblock() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusActive
 
-	a.addEvent(AccountUnblockedEvent{
+	a.addEvent(&AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			Type:        AccountUnblockedEventType,
 			AggregateID: a.ID,
+			Type:        AccountUnblockedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
+			CompletedAt: time.Time{},
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 	})
 }
@@ -116,12 +145,19 @@ func (a *Account) Deposit(amount float64) {
 	a.Balance += amount
 	a.UpdatedAt = now
 
-	a.addEvent(FundsDepositedEvent{
+	a.addEvent(&FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			Type:        AccountFundsDepositedEventType,
 			AggregateID: a.ID,
+			Type:        AccountFundsDepositedEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
+			CompletedAt: time.Time{},
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 		Amount:   amount,
 		Balance:  a.Balance,
@@ -137,12 +173,19 @@ func (a *Account) Withdraw(amount float64) error {
 	a.Balance -= amount
 	a.UpdatedAt = now
 
-	a.addEvent(FundsWithdrawnEvent{
+	a.addEvent(&FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          generateEventID(),
-			Type:        AccountFundsWithdrawnEventType,
 			AggregateID: a.ID,
+			Type:        AccountFundsWithdrawnEventType.String(),
+			TypeVersion: "0.0.0",
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
+			CompletedAt: time.Time{},
+			ScheduledAt: now,
+			Retry:       0,
+			MaxRetry:    3,
+			Data:        nil,
 		},
 		Amount:   amount,
 		Balance:  a.Balance,

@@ -24,9 +24,13 @@ type AccountEvent struct {
 	AccountID        pgtype.UUID
 	EventType        string
 	EventTypeVersion string
-	EventData        []byte
+	EventState       string
 	CreatedAt        pgtype.Timestamptz
+	CompletedAt      pgtype.Timestamptz
 	ScheduledAt      pgtype.Timestamptz
+	Retry            int32
+	MaxRetry         int32
+	EventData        []byte
 }
 
 type Customer struct {

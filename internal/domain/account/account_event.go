@@ -5,15 +5,23 @@ import (
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
+// AccountEventType represents the type of account event
+type AccountEventType string
+
+// String returns the string representation of the account event type
+func (e AccountEventType) String() string {
+	return string(e)
+}
+
 const (
-	AccountCreatedEventType   = "account.created"
-	AccountActivatedEventType = "account.activated"
+	AccountCreatedEventType   AccountEventType = "account.created"
+	AccountActivatedEventType AccountEventType = "account.activated"
 
-	AccountBlockedEventType   = "account.blocked"
-	AccountUnblockedEventType = "account.unblocked"
+	AccountBlockedEventType   AccountEventType = "account.blocked"
+	AccountUnblockedEventType AccountEventType = "account.unblocked"
 
-	AccountFundsDepositedEventType = "account.funds.deposited"
-	AccountFundsWithdrawnEventType = "account.funds.withdrawn"
+	AccountFundsDepositedEventType AccountEventType = "account.funds.deposited"
+	AccountFundsWithdrawnEventType AccountEventType = "account.funds.withdrawn"
 )
 
 // AccountCreatedEvent is emitted when a new account is created

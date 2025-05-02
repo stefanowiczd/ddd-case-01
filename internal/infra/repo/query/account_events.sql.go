@@ -12,17 +12,20 @@ import (
 )
 
 const createAccountEvent = `-- name: CreateAccountEvent :one
-INSERT INTO account_events (account_id, event_type, event_type_version, event_data, scheduled_at)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at
+INSERT INTO account_events (account_id, event_type, event_type_version, event_state, scheduled_at, retry, max_retry, event_data)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data
 `
 
 type CreateAccountEventParams struct {
 	AccountID        pgtype.UUID
 	EventType        string
 	EventTypeVersion string
-	EventData        []byte
+	EventState       string
 	ScheduledAt      pgtype.Timestamptz
+	Retry            int32
+	MaxRetry         int32
+	EventData        []byte
 }
 
 func (q *Queries) CreateAccountEvent(ctx context.Context, arg CreateAccountEventParams) (AccountEvent, error) {
@@ -30,8 +33,11 @@ func (q *Queries) CreateAccountEvent(ctx context.Context, arg CreateAccountEvent
 		arg.AccountID,
 		arg.EventType,
 		arg.EventTypeVersion,
-		arg.EventData,
+		arg.EventState,
 		arg.ScheduledAt,
+		arg.Retry,
+		arg.MaxRetry,
+		arg.EventData,
 	)
 	var i AccountEvent
 	err := row.Scan(
@@ -39,15 +45,19 @@ func (q *Queries) CreateAccountEvent(ctx context.Context, arg CreateAccountEvent
 		&i.AccountID,
 		&i.EventType,
 		&i.EventTypeVersion,
-		&i.EventData,
+		&i.EventState,
 		&i.CreatedAt,
+		&i.CompletedAt,
 		&i.ScheduledAt,
+		&i.Retry,
+		&i.MaxRetry,
+		&i.EventData,
 	)
 	return i, err
 }
 
 const findAccountEventByID = `-- name: FindAccountEventByID :one
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE id = $1
 `
 
@@ -59,15 +69,19 @@ func (q *Queries) FindAccountEventByID(ctx context.Context, id pgtype.UUID) (Acc
 		&i.AccountID,
 		&i.EventType,
 		&i.EventTypeVersion,
-		&i.EventData,
+		&i.EventState,
 		&i.CreatedAt,
+		&i.CompletedAt,
 		&i.ScheduledAt,
+		&i.Retry,
+		&i.MaxRetry,
+		&i.EventData,
 	)
 	return i, err
 }
 
 const findAccountEventsByAccountID = `-- name: FindAccountEventsByAccountID :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE account_id = $1
 `
 
@@ -85,9 +99,13 @@ func (q *Queries) FindAccountEventsByAccountID(ctx context.Context, accountID pg
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}
@@ -100,7 +118,7 @@ func (q *Queries) FindAccountEventsByAccountID(ctx context.Context, accountID pg
 }
 
 const findAccountEventsByAccountIDAndEventType = `-- name: FindAccountEventsByAccountIDAndEventType :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE account_id = $1 AND event_type = $2
 `
 
@@ -123,9 +141,13 @@ func (q *Queries) FindAccountEventsByAccountIDAndEventType(ctx context.Context, 
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}
@@ -138,7 +160,7 @@ func (q *Queries) FindAccountEventsByAccountIDAndEventType(ctx context.Context, 
 }
 
 const findAccountEventsByDateRange = `-- name: FindAccountEventsByDateRange :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE created_at BETWEEN $1 AND $2
 `
 
@@ -161,9 +183,13 @@ func (q *Queries) FindAccountEventsByDateRange(ctx context.Context, arg FindAcco
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}
@@ -176,7 +202,7 @@ func (q *Queries) FindAccountEventsByDateRange(ctx context.Context, arg FindAcco
 }
 
 const findAccountEventsByDateRangeAndAccountID = `-- name: FindAccountEventsByDateRangeAndAccountID :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE created_at BETWEEN $1 AND $2 AND account_id = $3
 `
 
@@ -200,9 +226,13 @@ func (q *Queries) FindAccountEventsByDateRangeAndAccountID(ctx context.Context, 
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}
@@ -215,7 +245,7 @@ func (q *Queries) FindAccountEventsByDateRangeAndAccountID(ctx context.Context, 
 }
 
 const findAccountEventsByDateRangeAndAccountIDAndEventType = `-- name: FindAccountEventsByDateRangeAndAccountIDAndEventType :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 WHERE created_at BETWEEN $1 AND $2 AND account_id = $3 AND event_type = $4
 `
 
@@ -245,9 +275,13 @@ func (q *Queries) FindAccountEventsByDateRangeAndAccountIDAndEventType(ctx conte
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}
@@ -260,7 +294,7 @@ func (q *Queries) FindAccountEventsByDateRangeAndAccountIDAndEventType(ctx conte
 }
 
 const findAccountEventsTheNewestFirst = `-- name: FindAccountEventsTheNewestFirst :many
-SELECT id, account_id, event_type, event_type_version, event_data, created_at, scheduled_at FROM account_events
+SELECT id, account_id, event_type, event_type_version, event_state, created_at, completed_at, scheduled_at, retry, max_retry, event_data FROM account_events
 ORDER BY created_at DESC
 `
 
@@ -278,9 +312,13 @@ func (q *Queries) FindAccountEventsTheNewestFirst(ctx context.Context) ([]Accoun
 			&i.AccountID,
 			&i.EventType,
 			&i.EventTypeVersion,
-			&i.EventData,
+			&i.EventState,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ScheduledAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
 		); err != nil {
 			return nil, err
 		}

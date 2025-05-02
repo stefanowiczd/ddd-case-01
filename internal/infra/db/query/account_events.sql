@@ -1,6 +1,6 @@
 -- name: CreateAccountEvent :one
-INSERT INTO account_events (account_id, event_type, event_type_version, event_data, scheduled_at)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO account_events (account_id, event_type, event_type_version, event_state, scheduled_at, retry, max_retry, event_data)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: FindAccountEventByID :one

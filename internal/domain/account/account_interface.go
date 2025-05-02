@@ -13,12 +13,33 @@ type Event interface {
 	// GetID returns the unique identifier of the event
 	GetID() uuid.UUID
 
-	// GetType returns the type of the event
-	GetType() string
-
 	// GetAggregateID returns the unique identifier of the aggregate that the event belongs to
 	GetAggregateID() uuid.UUID
 
+	// GetType returns the type of the event
+	GetType() string
+
+	// GetTypeVersion returns the version of the event's type
+	GetTypeVersion() string
+
+	// GetState returns the state of the event
+	GetState() string
+
 	// GetCreatedAt returns the date and time the event was created
 	GetCreatedAt() time.Time
+
+	// GetCompletedAt returns the date and time the event was completed
+	GetCompletedAt() time.Time
+
+	// GetScheduledAt is the time the event was scheduled to be processed (if applicable)
+	GetScheduledAt() time.Time
+
+	// GetRetry returns the number of times the event has been processed, field set to 1 when the event is scheduled, incremented when the event is retried up to MaxRetry
+	GetRetry() int
+
+	// GetMaxRetry returns the maximum number of times the event can be retried
+	GetMaxRetry() int
+
+	// GetEventData returns the event data
+	GetEventData() []byte
 }

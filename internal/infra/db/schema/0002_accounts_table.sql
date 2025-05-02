@@ -18,9 +18,13 @@ CREATE TABLE IF NOT EXISTS account_events (
     account_id UUID NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
     event_type VARCHAR(50) NOT NULL,
     event_type_version VARCHAR(10) NOT NULL,
-    event_data JSONB NOT NULL,
+    event_state VARCHAR(20) NOT NULL DEFAULT 'inactive',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    scheduled_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    scheduled_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    retry INT NOT NULL DEFAULT 0,
+    max_retry INT NOT NULL DEFAULT 3,
+    event_data JSONB NOT NULL
 );
 
 -- Create indexes

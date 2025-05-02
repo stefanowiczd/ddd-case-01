@@ -227,11 +227,15 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	event := accountdomain.FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
+			AggregateID: id,
 			Type:        accountdomain.AccountFundsDepositedEventType,
 			TypeVersion: "0.0.1",
-			AggregateID: id,
+			State:       "scheduled",
 			CreatedAt:   time.Now().UTC(),
+			CompletedAt: time.Time{},
 			ScheduledAt: time.Now().UTC(),
+			Retry:       1,
+			MaxRetry:    3,
 			Data:        nil,
 		},
 		Amount:   10,
