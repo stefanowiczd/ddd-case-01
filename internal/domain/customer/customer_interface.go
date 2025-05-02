@@ -15,7 +15,7 @@ type Event interface {
 
 	// GetContextID returns the unique identifier of the context that the event belongs to, i.e. account ID, customer ID, etc.
 	GetContextID() uuid.UUID
-	
+
 	// GetType returns the type of the event
 	GetType() string
 

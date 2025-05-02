@@ -29,8 +29,8 @@ const (
 // AccountCreatedEvent is emitted when a new account is created
 type CustomerCreatedEvent struct {
 	event.BaseEvent
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
+	FirstName string  `json:"firstName"`
+	LastName  string  `json:"lastName"`
 	Phone     string  `json:"phone"`
 	Email     string  `json:"email"`
 	Address   Address `json:"address"`
@@ -60,8 +60,8 @@ type CustomerUnblockedEvent struct {
 // CustomerUpdatedEvent is emitted when a customer is updated
 type CustomerUpdatedEvent struct {
 	event.BaseEvent
-	FirstName string  `json:"first_name"`
-	LastName  string  `json:"last_name"`
+	FirstName string  `json:"firstName"`
+	LastName  string  `json:"lastName"`
 	Phone     string  `json:"phone"`
 	Email     string  `json:"email"`
 	Address   Address `json:"address"`

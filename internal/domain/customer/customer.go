@@ -9,26 +9,26 @@ import (
 )
 
 type Customer struct {
-	ID        uuid.UUID      `json:"id"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
-	Phone     string         // Phone number of the customer
-	Email     string         // Email address of the customer
-	Address   Address        // Physical address of the customer
-	Status    CustomerStatus // Current status of the customer
-	Accounts  []string       // List of account IDs associated with the customer
-	CreatedAt time.Time      // When the customer was created
-	UpdatedAt time.Time      // When the customer was last updated
+	ID        uuid.UUID      `json:"id"`        // Unique identifier for the customer
+	FirstName string         `json:"firstName"` // First name of the customer
+	LastName  string         `json:"lastName"`  // Last name of the customer
+	Email     string         `json:"email"`     // Email address of the customer
+	Phone     string         `json:"phone"`     // Phone number of the customer
+	Address   Address        `json:"address"`   // Physical address of the customer
+	Status    CustomerStatus `json:"status"`    // Current status of the customer
+	Accounts  []string       `json:"accounts"`  // List of account IDs associated with the customer
+	CreatedAt time.Time      `json:"createdAt"` // When the customer was created
+	UpdatedAt time.Time      `json:"updatedAt"` // When the customer was last updated
 	Events    []Event        // List of events associated with the customer
 }
 
 // Address represents a physical address
 type Address struct {
-	Street     string `json:"street"`      // Street name and number
-	City       string `json:"city"`        // City name
-	State      string `json:"state"`       // State or province
-	PostalCode string `json:"postal_code"` // Postal or ZIP code
-	Country    string `json:"country"`     // Country name
+	Street     string `json:"street"`     // Street name and number
+	City       string `json:"city"`       // City name
+	State      string `json:"state"`      // State or province
+	PostalCode string `json:"postalCode"` // Postal or ZIP code
+	Country    string `json:"country"`    // Country name
 }
 
 func (a Address) compare(b Address) bool { //nolint:unused
