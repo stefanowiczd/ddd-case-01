@@ -10,6 +10,7 @@ import (
 	"github.com/stefanowiczd/ddd-case-01/internal/interface/rest/router"
 
 	accounthandler "github.com/stefanowiczd/ddd-case-01/internal/interface/rest/handler/account"
+	customerhandler "github.com/stefanowiczd/ddd-case-01/internal/interface/rest/handler/customer"
 )
 
 // Server represents the HTTP server
@@ -30,7 +31,9 @@ type Config struct {
 func NewServer(
 	config Config,
 	accountQueryHandler *accounthandler.AccountQueryHandler,
+	customerQueryHandler *customerhandler.CustomerQueryHandler,
 	accountHandler *accounthandler.AccountHandler,
+	customerHandler *customerhandler.CustomerHandler,
 ) *Server {
 	// Create router
 	r := http.NewServeMux()
@@ -43,7 +46,7 @@ func NewServer(
 
 	// Register routes
 	router.RegisterAccountRoutes(r, accountQueryHandler, accountHandler)
-
+	router.RegisterCustomerRoutes(r, customerQueryHandler, customerHandler)
 	// Create server
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.Port),
