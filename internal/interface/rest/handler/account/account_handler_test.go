@@ -130,16 +130,17 @@ func TestAccountHandler_CreateAccount(t *testing.T) {
 								InitialBalance: 100.0,
 								Currency:       "USD",
 							}).
-						Return(account.CreateAccountResponseDTO{
-							AccountResponseDTO: account.AccountResponseDTO{
-								ID:            "00000000-0000-0000-0000-000000000000",
-								AccountNumber: "1234567890",
-								CustomerID:    "customer123",
-								Balance:       100.0,
-								Currency:      "USD",
-								Status:        "active",
-							},
-						}, nil)
+						Return(
+							account.CreateAccountResponseDTO{
+								AccountResponseDTO: account.AccountResponseDTO{
+									ID:            "00000000-0000-0000-0000-000000000000",
+									AccountNumber: "1234567890",
+									CustomerID:    "customer123",
+									Balance:       100.0,
+									Currency:      "USD",
+									Status:        "active",
+								},
+							}, nil)
 
 					return mock
 				},

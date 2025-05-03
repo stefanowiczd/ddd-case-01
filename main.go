@@ -16,11 +16,11 @@ func main() {
 	accountService := &applicationaccount.AccountService{}
 	customerService := &applicationcustomer.CustomerService{}
 
-	accountQueryHandler := accounthandler.NewQueryHandler(
+	accountQueryHandler := accounthandler.NewAccountQueryHandler(
 		accountQueryService,
 	)
 
-	accountHandler := accounthandler.NewHandler(
+	accountHandler := accounthandler.NewAccountHandler(
 		accountService,
 	)
 

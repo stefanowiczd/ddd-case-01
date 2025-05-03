@@ -9,13 +9,13 @@ import (
 	applicationaccount "github.com/stefanowiczd/ddd-case-01/internal/application/account"
 )
 
-// Handler handles HTTP requests for account operations
+// AccountHandler handles HTTP requests for account operations
 type AccountHandler struct {
 	accountService AccountService
 }
 
-// NewHandler creates a new account handler
-func NewHandler(accountService AccountService) *AccountHandler {
+// NewAccountHandler creates a new account handler
+func NewAccountHandler(accountService AccountService) *AccountHandler {
 	return &AccountHandler{
 		accountService: accountService,
 	}
@@ -30,7 +30,7 @@ type CreateAccountRequest struct {
 
 func (r CreateAccountRequest) Validate() error {
 	if _, err := uuid.Parse(r.CustomerID); err != nil {
-		return fmt.Errorf("validate: customer id ass uuid: %w", err)
+		return fmt.Errorf("validate: customer id as uuid: %w", err)
 	}
 
 	return nil

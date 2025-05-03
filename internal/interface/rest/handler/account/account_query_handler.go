@@ -9,13 +9,13 @@ import (
 	applicationaccount "github.com/stefanowiczd/ddd-case-01/internal/application/account"
 )
 
-// Handler handles HTTP requests for account operations
+// AccountQueryHandler handles HTTP requests for account query operations
 type AccountQueryHandler struct {
 	accountQueryService AccountQueryService
 }
 
-// NewQueryHandler creates a new account query handler
-func NewQueryHandler(accountQueryService AccountQueryService) *AccountQueryHandler {
+// NewAccountQueryHandler creates a new account query handler
+func NewAccountQueryHandler(accountQueryService AccountQueryService) *AccountQueryHandler {
 	return &AccountQueryHandler{
 		accountQueryService: accountQueryService,
 	}

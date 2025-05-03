@@ -8,7 +8,7 @@ import (
 
 //go:generate mockgen -destination=./mock/account_handler_mock.go -package=mock -source=./account_interface.go
 
-// AccountQueryService defines the contract for account query operations
+// AccountQueryService defines the contract for account query service that handles queries/read operations
 type AccountQueryService interface {
 	// GetAccount retrieves an account by its ID
 	GetAccount(ctx context.Context, dto applicationaccount.GetAccountDTO) (applicationaccount.AccountResponseDTO, error)
@@ -17,7 +17,7 @@ type AccountQueryService interface {
 	GetCustomerAccounts(ctx context.Context, dto applicationaccount.GetCustomerAccountsDTO) (applicationaccount.GetCustomerAccountsResponseDTO, error)
 }
 
-// AccountService defines the contract for account operations
+// AccountService defines the contract for account service that handles commands/mutable operations
 type AccountService interface {
 	// CreateAccount creates a new account
 	CreateAccount(ctx context.Context, dto applicationaccount.CreateAccountDTO) (applicationaccount.CreateAccountResponseDTO, error)
