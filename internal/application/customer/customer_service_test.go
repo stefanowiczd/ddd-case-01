@@ -63,7 +63,7 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 			},
 		},
 		{
-			name: "shouldn't create customer - customer query repository error",
+			name: "shouldn't create customer - internal error when finding customer by id",
 			params: testCaseParams{
 				dto: CreateCustomerDTO{
 					FirstName:   "John",
@@ -75,7 +75,7 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("some error"))
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
 
 					return mock
 				},
@@ -84,8 +84,7 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
-				wantError:      true,
-				errWantCompare: false,
+				wantError: true,
 			},
 		},
 		{
@@ -113,8 +112,7 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
-				wantError:      true,
-				errWantCompare: false,
+				wantError: true,
 			},
 		},
 		{
@@ -194,6 +192,23 @@ func Test_CustomerService_GetCustomer(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "shouldn't get customer - internal error when finding customer by id",
+			params: testCaseParams{
+				dto: GetCustomerDTO{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
+				},
+				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
+					mock := mock.NewMockCustomerQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+
+					return mock
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
 			name: "shouldn't get customer - customer not found",
 			params: testCaseParams{
 				dto: GetCustomerDTO{
@@ -201,7 +216,7 @@ func Test_CustomerService_GetCustomer(t *testing.T) {
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrCustomerNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, customerdomain.ErrCustomerNotFound)
 
 					return mock
 				},
@@ -280,6 +295,26 @@ func Test_CustomerService_UpdateCustomer(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "shouldn't update customer - internal error when finding customer by id",
+			params: testCaseParams{
+				dto: UpdateCustomerDTO{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
+				},
+				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
+					mock := mock.NewMockCustomerQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+
+					return mock
+				},
+				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
+					return mock.NewMockCustomerEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
 			name: "shouldn't update customer - customer not found",
 			params: testCaseParams{
 				dto: UpdateCustomerDTO{
@@ -287,7 +322,7 @@ func Test_CustomerService_UpdateCustomer(t *testing.T) {
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrCustomerNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, customerdomain.ErrCustomerNotFound)
 
 					return mock
 				},
@@ -302,7 +337,7 @@ func Test_CustomerService_UpdateCustomer(t *testing.T) {
 			},
 		},
 		{
-			name: "shouldn't update customer - customer event repository error",
+			name: "shouldn't update customer - internal error when creating customer event",
 			params: testCaseParams{
 				dto: UpdateCustomerDTO{
 					CustomerID: "00000000-0000-0000-0000-000000000000",
@@ -315,14 +350,13 @@ func Test_CustomerService_UpdateCustomer(t *testing.T) {
 				},
 				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
 					mock := mock.NewMockCustomerEventRepository(m)
-					mock.EXPECT().CreateEvents(gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+					mock.EXPECT().CreateEvents(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
 
 					return mock
 				},
 			},
 			expected: testCaseExpected{
-				wantError:      true,
-				errWantCompare: false,
+				wantError: true,
 			},
 		},
 		{
@@ -398,6 +432,27 @@ func Test_CustomerService_BlockCustomer(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "shouldn't block customer - internal error when finding customer by id",
+			params: testCaseParams{
+				dto: BlockCustomerDTO{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
+					Reason:     "some reason",
+				},
+				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
+					mock := mock.NewMockCustomerQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+
+					return mock
+				},
+				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
+					return mock.NewMockCustomerEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
 			name: "shouldn't block customer - customer not found",
 			params: testCaseParams{
 				dto: BlockCustomerDTO{
@@ -406,7 +461,7 @@ func Test_CustomerService_BlockCustomer(t *testing.T) {
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrCustomerNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, customerdomain.ErrCustomerNotFound)
 
 					return mock
 				},
@@ -519,6 +574,26 @@ func Test_CustomerService_UnblockCustomer(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "shouldn't unblock customer - internal error when finding customer by id",
+			params: testCaseParams{
+				dto: UnblockCustomerDTO{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
+				},
+				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
+					mock := mock.NewMockCustomerQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+
+					return mock
+				},
+				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
+					return mock.NewMockCustomerEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
 			name: "shouldn't unblock customer - customer not found",
 			params: testCaseParams{
 				dto: UnblockCustomerDTO{
@@ -526,7 +601,7 @@ func Test_CustomerService_UnblockCustomer(t *testing.T) {
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrCustomerNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, customerdomain.ErrCustomerNotFound)
 
 					return mock
 				},
@@ -637,14 +712,14 @@ func Test_CustomerService_DeleteCustomer(t *testing.T) {
 
 	tests := []testCase{
 		{
-			name: "shouldn't delete customer - customer not found",
+			name: "shouldn't delete customer - internal error when finding customer by id",
 			params: testCaseParams{
 				dto: DeleteCustomerDTO{
 					CustomerID: "00000000-0000-0000-0000-000000000000",
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrCustomerNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
 
 					return mock
 				},
@@ -653,13 +728,31 @@ func Test_CustomerService_DeleteCustomer(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
-				wantError:      true,
-				errWantCompare: true,
-				err:            ErrCustomerNotFound,
+				wantError: true,
 			},
 		},
 		{
-			name: "shouldn't delete customer - customer event repository error",
+			name: "shouldn't delete customer - customer not found - no error",
+			params: testCaseParams{
+				dto: DeleteCustomerDTO{
+					CustomerID: "00000000-0000-0000-0000-000000000000",
+				},
+				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
+					mock := mock.NewMockCustomerQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, customerdomain.ErrCustomerNotFound)
+
+					return mock
+				},
+				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
+					return mock.NewMockCustomerEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't delete customer - internal error when creating customer event",
 			params: testCaseParams{
 				dto: DeleteCustomerDTO{
 					CustomerID: "00000000-0000-0000-0000-000000000000",
@@ -672,14 +765,13 @@ func Test_CustomerService_DeleteCustomer(t *testing.T) {
 				},
 				mockCustomerEventRepo: func(m *gomock.Controller) *mock.MockCustomerEventRepository {
 					mock := mock.NewMockCustomerEventRepository(m)
-					mock.EXPECT().CreateEvents(gomock.Any(), gomock.Any()).Return(errors.New("some error"))
+					mock.EXPECT().CreateEvents(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
 
 					return mock
 				},
 			},
 			expected: testCaseExpected{
-				wantError:      true,
-				errWantCompare: false,
+				wantError: true,
 			},
 		},
 		{

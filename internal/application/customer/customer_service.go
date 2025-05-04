@@ -67,11 +67,7 @@ func (c *CustomerService) CreateCustomer(ctx context.Context, dto CreateCustomer
 	customerID := uuid.New()
 
 	_, err := c.customerQueryRepo.FindByID(ctx, customerID)
-	if errors.Is(err, ErrCustomerAlreadyExists) {
-		return CreateCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", ErrCustomerAlreadyExists)
-	}
-
-	if err != nil && !errors.Is(err, ErrCustomerNotFound) {
+	if err != nil && !errors.Is(err, customerdomain.ErrCustomerNotFound) {
 		return CreateCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", err)
 	}
 
@@ -108,11 +104,11 @@ type GetCustomerResponseDTO struct {
 // GetCustomer retrieves a customer by its ID
 func (c *CustomerService) GetCustomer(ctx context.Context, dto GetCustomerDTO) (GetCustomerResponseDTO, error) {
 	customer, err := c.customerQueryRepo.FindByID(ctx, uuid.MustParse(dto.CustomerID))
-	if err != nil && !errors.Is(err, ErrCustomerNotFound) {
-		return GetCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", err)
-	}
-
 	if err != nil {
+		if errors.Is(err, customerdomain.ErrCustomerNotFound) {
+			return GetCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", ErrCustomerNotFound)
+		}
+
 		return GetCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", err)
 	}
 
@@ -156,6 +152,10 @@ func (c *CustomerService) detectChanges(dto UpdateCustomerDTO) customerdomain.Cu
 func (c *CustomerService) UpdateCustomer(ctx context.Context, dto UpdateCustomerDTO) error {
 	customer, err := c.customerQueryRepo.FindByID(ctx, uuid.MustParse(dto.CustomerID))
 	if err != nil {
+		if errors.Is(err, customerdomain.ErrCustomerNotFound) {
+			return fmt.Errorf("finding customer by id: %w", ErrCustomerNotFound)
+		}
+
 		return fmt.Errorf("finding customer by id: %w", err)
 	}
 
@@ -179,6 +179,10 @@ type BlockCustomerDTO struct {
 func (c *CustomerService) BlockCustomer(ctx context.Context, dto BlockCustomerDTO) error {
 	customer, err := c.customerQueryRepo.FindByID(ctx, uuid.MustParse(dto.CustomerID))
 	if err != nil {
+		if errors.Is(err, customerdomain.ErrCustomerNotFound) {
+			return fmt.Errorf("finding customer by id: %w", ErrCustomerNotFound)
+		}
+
 		return fmt.Errorf("finding customer by id: %w", err)
 	}
 
@@ -199,6 +203,10 @@ type UnblockCustomerDTO struct {
 func (c *CustomerService) UnblockCustomer(ctx context.Context, dto UnblockCustomerDTO) error {
 	customer, err := c.customerQueryRepo.FindByID(ctx, uuid.MustParse(dto.CustomerID))
 	if err != nil {
+		if errors.Is(err, customerdomain.ErrCustomerNotFound) {
+			return fmt.Errorf("finding customer by id: %w", ErrCustomerNotFound)
+		}
+
 		return fmt.Errorf("finding customer by id: %w", err)
 	}
 
@@ -219,6 +227,10 @@ type DeleteCustomerDTO struct {
 func (c *CustomerService) DeleteCustomer(ctx context.Context, dto DeleteCustomerDTO) error {
 	customer, err := c.customerQueryRepo.FindByID(ctx, uuid.MustParse(dto.CustomerID))
 	if err != nil {
+		if errors.Is(err, customerdomain.ErrCustomerNotFound) {
+			return nil
+		}
+
 		return fmt.Errorf("finding customer by id: %w", err)
 	}
 

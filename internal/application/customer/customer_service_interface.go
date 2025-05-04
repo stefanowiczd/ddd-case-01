@@ -16,6 +16,9 @@ import (
 type CustomerQueryRepository interface {
 	// FindByID retrieves a customer by its ID
 	FindByID(ctx context.Context, id uuid.UUID) (*customerdomain.Customer, error)
+
+	// FindByEmail retrieves a customer by its email
+	FindByEmail(ctx context.Context, email string) (*customerdomain.Customer, error)
 }
 
 // CustomerEventRepository defines the interface for customer event persistence
