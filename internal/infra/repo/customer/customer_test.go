@@ -27,6 +27,10 @@ func TestCustomerRepository_FindByID_NoRows(t *testing.T) {
 
 	require.ErrorIs(t, err, customerdomain.ErrCustomerNotFound)
 	require.Nil(t, cust)
+
+	cust, err = repo.FindByEmail(ctx, "john.doe.x@example.com")
+	require.ErrorIs(t, err, customerdomain.ErrCustomerNotFound)
+	require.Nil(t, cust)
 }
 
 func TestCustomerRepository_CreateCustomer(t *testing.T) {
@@ -73,4 +77,13 @@ func TestCustomerRepository_CreateCustomer(t *testing.T) {
 
 	_, err = repo.CreateCustomer(ctx, &cust)
 	require.ErrorIs(t, err, customerdomain.ErrCustomerAlreadyExists)
+
+	cust2, err := repo.FindByID(ctx, custOut.ID)
+	require.NoError(t, err)
+	require.NotNil(t, cust2)
+
+	cust2, err = repo.FindByEmail(ctx, custOut.Email)
+	require.NoError(t, err)
+	require.NotNil(t, cust)
+
 }

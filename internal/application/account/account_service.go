@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 
@@ -74,7 +75,15 @@ func (s *AccountService) CreateAccount(ctx context.Context, dto CreateAccountDTO
 	}
 
 	accountNumber := generateAccountNumber()
-	account := accountdomain.NewAccount(uuid.New(), uuid.MustParse(dto.CustomerID), accountNumber, dto.InitialBalance, dto.Currency)
+	id := uuid.New()
+
+	if _, err := s.accountQueryRepo.FindByID(ctx, id); err != nil {
+		if !errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return CreateAccountResponseDTO{}, fmt.Errorf("finding account by id: %w", err)
+		}
+	}
+
+	account := accountdomain.NewAccount(id, uuid.MustParse(dto.CustomerID), accountNumber, dto.InitialBalance, dto.Currency)
 
 	if err := s.accountEventRepo.CreateEvents(ctx, account.GetEvents()); err != nil {
 		return CreateAccountResponseDTO{}, err
@@ -93,7 +102,10 @@ type GetAccountDTO struct {
 func (s *AccountService) GetAccount(ctx context.Context, dto GetAccountDTO) (AccountResponseDTO, error) {
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
-		return AccountResponseDTO{}, ErrAccountNotFound
+		if errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return AccountResponseDTO{}, fmt.Errorf("finding account by id: %w", ErrAccountNotFound)
+		}
+		return AccountResponseDTO{}, fmt.Errorf("finding account by id: %w", err)
 	}
 
 	return ToDTO(account), nil
@@ -113,7 +125,10 @@ func (s *AccountService) Deposit(ctx context.Context, dto DepositDTO) error {
 
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
-		return ErrAccountNotFound
+		if errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return fmt.Errorf("finding account by id: %w", ErrAccountNotFound)
+		}
+		return fmt.Errorf("finding account by id: %w", err)
 	}
 
 	account.Deposit(dto.Amount)
@@ -135,8 +150,10 @@ func (s *AccountService) Withdraw(ctx context.Context, dto WithdrawDTO) error {
 
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
-		// TODO add more precise error check.
-		return ErrAccountNotFound
+		if errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return fmt.Errorf("finding account by id: %w", ErrAccountNotFound)
+		}
+		return fmt.Errorf("finding account by id: %w", err)
 	}
 
 	return s.accountEventRepo.CreateEvents(ctx, account.GetEvents())
@@ -151,8 +168,10 @@ type BlockAccountDTO struct {
 func (s *AccountService) BlockAccount(ctx context.Context, dto BlockAccountDTO) error {
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
-		// TODO add more precise error check
-		return ErrAccountNotFound
+		if errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return fmt.Errorf("finding account by id: %w", ErrAccountNotFound)
+		}
+		return fmt.Errorf("finding account by id: %w", err)
 	}
 
 	account.Block()
@@ -169,8 +188,10 @@ type UnblockAccountDTO struct {
 func (s *AccountService) UnblockAccount(ctx context.Context, dto UnblockAccountDTO) error {
 	account, err := s.accountQueryRepo.FindByID(ctx, dto.AccountID)
 	if err != nil {
-		// TODO add more precise error check
-		return ErrAccountNotFound
+		if errors.Is(err, accountdomain.ErrAccountNotFound) {
+			return fmt.Errorf("finding account by id: %w", ErrAccountNotFound)
+		}
+		return fmt.Errorf("finding account by id: %w", err)
 	}
 
 	account.Unblock()
@@ -209,6 +230,7 @@ type GetCustomerAccountsResponseDTO struct {
 	Accounts []AccountResponseDTO `json:"accounts"`
 }
 
+// TODO: move to customer service where responsibility of customer is
 // GetCustomerAccounts retrieves all accounts for a customer
 func (s *AccountService) GetCustomerAccounts(ctx context.Context, dto GetCustomerAccountsDTO) (GetCustomerAccountsResponseDTO, error) {
 	_, err := s.customerQueryRepo.FindByID(ctx, dto.CustomerID)

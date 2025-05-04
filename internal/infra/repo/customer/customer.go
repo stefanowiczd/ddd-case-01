@@ -60,6 +60,38 @@ func (r *CustomerRepository) FindByID(ctx context.Context, id uuid.UUID) (*custo
 	}, nil
 }
 
+// FindByEmail finds a customer by email
+func (r *CustomerRepository) FindByEmail(ctx context.Context, email string) (*customerdomain.Customer, error) {
+	customer, err := r.Q.FindCustomerByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("finding customer by email: %w", customerdomain.ErrCustomerNotFound)
+		}
+
+		return nil, fmt.Errorf("finding customer by email: %w", err)
+	}
+
+	return &customerdomain.Customer{
+		ID:          customer.ID.Bytes,
+		FirstName:   customer.FirstName,
+		LastName:    customer.LastName,
+		Email:       customer.Email,
+		Phone:       customer.Phone.String,
+		DateOfBirth: customer.DateOfBirth,
+		Address: customerdomain.Address{
+			Street:     customer.AddressStreet.String,
+			City:       customer.AddressCity.String,
+			State:      customer.AddressState.String,
+			PostalCode: customer.AddressZipCode.String,
+			Country:    customer.AddressCountry.String,
+		},
+		Status:    customerdomain.CustomerStatus(customer.Status),
+		Accounts:  []string{},
+		CreatedAt: customer.CreatedAt.Time,
+		UpdatedAt: customer.UpdatedAt.Time,
+	}, nil
+}
+
 // CreateCustomer creates a new customer
 func (r *CustomerRepository) CreateCustomer(ctx context.Context, cust *customerdomain.Customer) (*customerdomain.Customer, error) {
 	tx, err := r.Conn.Begin(ctx)

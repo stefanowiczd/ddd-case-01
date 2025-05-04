@@ -4,7 +4,7 @@ package account
 
 import (
 	"context"
-
+	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -19,12 +19,14 @@ import (
 func TestAccountService_CreateAccount(t *testing.T) {
 	type testCaseParams struct {
 		dto                  CreateAccountDTO
+		mockAccountQueryRepo func(*gomock.Controller) *mock.MockAccountQueryRepository
 		mockAccountEventRepo func(*gomock.Controller) *mock.MockAccountEventRepository
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -33,12 +35,80 @@ func TestAccountService_CreateAccount(t *testing.T) {
 		expected testCaseExpected
 	}{
 		{
+			name: "should return error for negative balance",
+			params: testCaseParams{
+				dto: CreateAccountDTO{
+					CustomerID:     "00000000-0000-0000-0000-000000000000",
+					InitialBalance: -100,
+					Currency:       "USD",
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					return mock.NewMockAccountQueryRepository(m)
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrInvalidInitialBalanceAmount,
+			},
+		},
+		{
+			name: "should return error - error",
+			params: testCaseParams{
+				dto: CreateAccountDTO{
+					CustomerID:     "00000000-0000-0000-0000-000000000000",
+					InitialBalance: 0,
+					Currency:       "USD",
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "should return error - account with given id already exists",
+			params: testCaseParams{
+				dto: CreateAccountDTO{
+					CustomerID:     "00000000-0000-0000-0000-000000000000",
+					InitialBalance: 0,
+					Currency:       "USD",
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountAlreadyExists)
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
 			name: "should create account successfully",
 			params: testCaseParams{
 				dto: CreateAccountDTO{
 					CustomerID:     "00000000-0000-0000-0000-000000000000",
 					InitialBalance: 0,
 					Currency:       "USD",
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
+					return mock
 				},
 				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
 					mock := mock.NewMockAccountEventRepository(m)
@@ -51,23 +121,6 @@ func TestAccountService_CreateAccount(t *testing.T) {
 				err:       nil,
 			},
 		},
-		{
-			name: "should return error for negative balance",
-			params: testCaseParams{
-				dto: CreateAccountDTO{
-					CustomerID:     "00000000-0000-0000-0000-000000000000",
-					InitialBalance: -100,
-					Currency:       "USD",
-				},
-				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
-					return mock.NewMockAccountEventRepository(m)
-				},
-			},
-			expected: testCaseExpected{
-				wantError: true,
-				err:       ErrInvalidInitialBalanceAmount,
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -76,7 +129,7 @@ func TestAccountService_CreateAccount(t *testing.T) {
 			defer ctrl.Finish()
 
 			service := NewService(
-				mock.NewMockAccountQueryRepository(ctrl),
+				tt.params.mockAccountQueryRepo(ctrl),
 				mock.NewMockCustomerQueryRepository(ctrl),
 				tt.params.mockAccountEventRepo(ctrl),
 			)
@@ -84,7 +137,9 @@ func TestAccountService_CreateAccount(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.Equal(t, tt.expected.err, err)
+				if tt.expected.wantErrorCompare {
+					require.Equal(t, tt.expected.err, err)
+				}
 				require.Empty(t, account)
 			} else {
 				require.NoError(t, err)
@@ -101,8 +156,9 @@ func TestAccountService_GetAccount(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -111,20 +167,37 @@ func TestAccountService_GetAccount(t *testing.T) {
 		expected testCaseExpected
 	}{
 		{
-			name: "shouldn't get account",
+			name: "shouldn't get account - internal error",
 			params: testCaseParams{
 				dto: GetAccountDTO{
 					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrAccountNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
 					return mock
 				},
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrAccountNotFound,
+			},
+		},
+		{
+			name: "shouldn't get account - account not found",
+			params: testCaseParams{
+				dto: GetAccountDTO{
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
+					return mock
+				},
+			},
+			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrAccountNotFound,
 			},
 		},
 		{
@@ -160,7 +233,9 @@ func TestAccountService_GetAccount(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.ErrorIs(t, err, tt.expected.err)
+				if tt.expected.wantErrorCompare {
+					require.ErrorIs(t, err, tt.expected.err)
+				}
 				require.Empty(t, account)
 			} else {
 				require.NoError(t, err)
@@ -178,8 +253,9 @@ func TestAccountService_Deposit(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -202,8 +278,29 @@ func TestAccountService_Deposit(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrInvalidDepositAmount,
+			},
+		},
+		{
+			name: "shouldn't deposit - internal error while finding account",
+			params: testCaseParams{
+				dto: DepositDTO{
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+					Amount:    100,
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrInvalidDepositAmount,
 			},
 		},
 		{
@@ -215,7 +312,7 @@ func TestAccountService_Deposit(t *testing.T) {
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrAccountNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
 					return mock
 				},
 				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
@@ -223,8 +320,9 @@ func TestAccountService_Deposit(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
-				wantError: true,
-				err:       ErrAccountNotFound,
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrAccountNotFound,
 			},
 		},
 		{
@@ -266,7 +364,9 @@ func TestAccountService_Deposit(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.ErrorIs(t, err, tt.expected.err)
+				if tt.expected.wantErrorCompare {
+					require.ErrorIs(t, err, tt.expected.err)
+				}
 			} else {
 				require.NoError(t, err)
 			}
@@ -282,8 +382,9 @@ func TestAccountService_Withdraw(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -306,8 +407,29 @@ func TestAccountService_Withdraw(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrInvalidWithdrawAmount,
+			},
+		},
+		{
+			name: "shouldn't withdraw - internal error while finding account",
+			params: testCaseParams{
+				dto: WithdrawDTO{
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+					Amount:    100,
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrInvalidWithdrawAmount,
 			},
 		},
 		{
@@ -327,8 +449,9 @@ func TestAccountService_Withdraw(t *testing.T) {
 				},
 			},
 			expected: testCaseExpected{
-				wantError: true,
-				err:       ErrAccountNotFound,
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrAccountNotFound,
 			},
 		},
 		{
@@ -370,7 +493,9 @@ func TestAccountService_Withdraw(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.ErrorIs(t, err, tt.expected.err)
+				if tt.expected.wantErrorCompare {
+					require.ErrorIs(t, err, tt.expected.err)
+				}
 			} else {
 				require.NoError(t, err)
 			}
@@ -386,8 +511,9 @@ func TestAccountService_BlockAccount(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -396,14 +522,14 @@ func TestAccountService_BlockAccount(t *testing.T) {
 		expected testCaseExpected
 	}{
 		{
-			name: "shouldn't block account - account not found",
+			name: "shouldn't block account - internal error while finding account",
 			params: testCaseParams{
 				dto: BlockAccountDTO{
 					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrAccountNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
 					return mock
 				},
 				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
@@ -412,7 +538,27 @@ func TestAccountService_BlockAccount(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrAccountNotFound,
+			},
+		},
+		{
+			name: "shouldn't block account - account not found",
+			params: testCaseParams{
+				dto: BlockAccountDTO{
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrAccountNotFound,
 			},
 		},
 		{
@@ -453,7 +599,9 @@ func TestAccountService_BlockAccount(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.ErrorIs(t, err, tt.expected.err)
+				if tt.expected.wantErrorCompare {
+					require.ErrorIs(t, err, tt.expected.err)
+				}
 			} else {
 				require.NoError(t, err)
 			}
@@ -469,8 +617,9 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 	}
 
 	type testCaseExpected struct {
-		wantError bool
-		err       error
+		wantError        bool
+		wantErrorCompare bool
+		err              error
 	}
 
 	tests := []struct {
@@ -479,14 +628,14 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 		expected testCaseExpected
 	}{
 		{
-			name: "shouldn't unblock account - account not found",
+			name: "shouldn't unblock account - internal error while finding account",
 			params: testCaseParams{
 				dto: UnblockAccountDTO{
 					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
 				},
 				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
 					mock := mock.NewMockAccountQueryRepository(m)
-					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, ErrAccountNotFound)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, errors.New("internal error"))
 					return mock
 				},
 				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
@@ -495,7 +644,27 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 			},
 			expected: testCaseExpected{
 				wantError: true,
-				err:       ErrAccountNotFound,
+			},
+		},
+		{
+			name: "shouldn't unblock account - account not found",
+			params: testCaseParams{
+				dto: UnblockAccountDTO{
+					AccountID: uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+				},
+				mockAccountQueryRepo: func(m *gomock.Controller) *mock.MockAccountQueryRepository {
+					mock := mock.NewMockAccountQueryRepository(m)
+					mock.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(nil, accountdomain.ErrAccountNotFound)
+					return mock
+				},
+				mockAccountEventRepo: func(m *gomock.Controller) *mock.MockAccountEventRepository {
+					return mock.NewMockAccountEventRepository(m)
+				},
+			},
+			expected: testCaseExpected{
+				wantError:        true,
+				wantErrorCompare: true,
+				err:              ErrAccountNotFound,
 			},
 		},
 		{
@@ -536,7 +705,9 @@ func TestAccountService_UnblockAccount(t *testing.T) {
 
 			if tt.expected.wantError {
 				require.Error(t, err)
-				require.ErrorIs(t, err, tt.expected.err)
+				if tt.expected.wantErrorCompare {
+					require.ErrorIs(t, err, tt.expected.err)
+				}
 			} else {
 				require.NoError(t, err)
 			}
