@@ -125,6 +125,20 @@ func (mr *MockEventMockRecorder) GetMaxRetry() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMaxRetry", reflect.TypeOf((*MockEvent)(nil).GetMaxRetry))
 }
 
+// GetOrigin mocks base method.
+func (m *MockEvent) GetOrigin() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrigin")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GetOrigin indicates an expected call of GetOrigin.
+func (mr *MockEventMockRecorder) GetOrigin() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrigin", reflect.TypeOf((*MockEvent)(nil).GetOrigin))
+}
+
 // GetRetry mocks base method.
 func (m *MockEvent) GetRetry() int {
 	m.ctrl.T.Helper()
@@ -151,6 +165,20 @@ func (m *MockEvent) GetScheduledAt() time.Time {
 func (mr *MockEventMockRecorder) GetScheduledAt() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScheduledAt", reflect.TypeOf((*MockEvent)(nil).GetScheduledAt))
+}
+
+// GetStartedAt mocks base method.
+func (m *MockEvent) GetStartedAt() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStartedAt")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// GetStartedAt indicates an expected call of GetStartedAt.
+func (mr *MockEventMockRecorder) GetStartedAt() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStartedAt", reflect.TypeOf((*MockEvent)(nil).GetStartedAt))
 }
 
 // GetState mocks base method.

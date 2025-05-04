@@ -15,22 +15,8 @@ type Account struct {
 	Balance       float64
 	Currency      string
 	Status        string
-	CreatedAt     pgtype.Timestamptz
-	UpdatedAt     pgtype.Timestamptz
-}
-
-type AccountEvent struct {
-	ID               pgtype.UUID
-	AccountID        pgtype.UUID
-	EventType        string
-	EventTypeVersion string
-	EventState       string
-	CreatedAt        pgtype.Timestamptz
-	CompletedAt      pgtype.Timestamptz
-	ScheduledAt      pgtype.Timestamptz
-	Retry            int32
-	MaxRetry         int32
-	EventData        []byte
+	CreatedAt     pgtype.Timestamp
+	UpdatedAt     pgtype.Timestamp
 }
 
 type Customer struct {
@@ -39,7 +25,7 @@ type Customer struct {
 	LastName       string
 	Email          string
 	Phone          pgtype.Text
-	DateOfBirth    pgtype.Date
+	DateOfBirth    string
 	AddressStreet  pgtype.Text
 	AddressCity    pgtype.Text
 	AddressState   pgtype.Text
@@ -49,4 +35,20 @@ type Customer struct {
 	DeletedAt      pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
+}
+
+type Event struct {
+	ID               pgtype.UUID
+	ContextID        pgtype.UUID
+	EventOrigin      string
+	EventType        string
+	EventTypeVersion string
+	EventState       string
+	CreatedAt        pgtype.Timestamp
+	ScheduledAt      pgtype.Timestamp
+	StartedAt        pgtype.Timestamp
+	CompletedAt      pgtype.Timestamp
+	Retry            int32
+	MaxRetry         int32
+	EventData        []byte
 }

@@ -50,11 +50,12 @@ func NewCustomerService(customerQueryRepo CustomerQueryRepository, customerEvent
 }
 
 type CreateCustomerDTO struct {
-	FirstName string
-	LastName  string
-	Email     string
-	Phone     string
-	Address   Address
+	FirstName   string
+	LastName    string
+	Email       string
+	Phone       string
+	DateOfBirth string
+	Address     Address
 }
 
 type CreateCustomerResponseDTO struct {
@@ -74,7 +75,7 @@ func (c *CustomerService) CreateCustomer(ctx context.Context, dto CreateCustomer
 		return CreateCustomerResponseDTO{}, fmt.Errorf("finding customer by id: %w", err)
 	}
 
-	customer := customerdomain.NewCustomer(customerID, dto.FirstName, dto.LastName, dto.Email, dto.Phone, dto.Address)
+	customer := customerdomain.NewCustomer(customerID, dto.FirstName, dto.LastName, dto.Phone, dto.Email, dto.DateOfBirth, dto.Address)
 
 	err = c.customerEventRepo.CreateEvents(ctx, customer.Events)
 	if err != nil {
@@ -121,12 +122,13 @@ func (c *CustomerService) GetCustomer(ctx context.Context, dto GetCustomerDTO) (
 }
 
 type UpdateCustomerDTO struct {
-	CustomerID string
-	FirstName  string
-	LastName   string
-	Email      string
-	Phone      string
-	Address    Address
+	CustomerID  string
+	FirstName   string
+	LastName    string
+	Email       string
+	Phone       string
+	DateOfBirth string
+	Address     Address
 }
 
 func (c *CustomerService) detectChanges(dto UpdateCustomerDTO) customerdomain.CustomerEventType {
@@ -159,7 +161,7 @@ func (c *CustomerService) UpdateCustomer(ctx context.Context, dto UpdateCustomer
 
 	updateEventType := c.detectChanges(dto)
 
-	customer.Update(updateEventType, dto.FirstName, dto.LastName, dto.Email, dto.Phone, dto.Address)
+	customer.Update(updateEventType, dto.FirstName, dto.LastName, dto.Phone, dto.Email, dto.DateOfBirth, dto.Address)
 
 	err = c.customerEventRepo.CreateEvents(ctx, customer.Events)
 	if err != nil {

@@ -13,12 +13,13 @@ import (
 func Test_NewCustomer(t *testing.T) {
 
 	type testCaseParams struct {
-		customerID uuid.UUID
-		firstName  string
-		lastName   string
-		phone      string
-		email      string
-		address    Address
+		customerID  uuid.UUID
+		firstName   string
+		lastName    string
+		phone       string
+		email       string
+		dateOfBirth string
+		address     Address
 	}
 
 	type testCaseExpected struct {
@@ -34,12 +35,13 @@ func Test_NewCustomer(t *testing.T) {
 		{
 			name: "should create new cutomer with active status",
 			params: testCaseParams{
-				customerID: uuid.New(),
-				firstName:  "John",
-				lastName:   "Doe",
-				phone:      "1234567890",
-				email:      "john.doe@example.com",
-				address:    Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+				customerID:  uuid.New(),
+				firstName:   "John",
+				lastName:    "Doe",
+				phone:       "1234567890",
+				email:       "john.doe@example.com",
+				dateOfBirth: "1990-01-01",
+				address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 			},
 			expected: testCaseExpected{
 				eventsNumber: 1,
@@ -50,7 +52,7 @@ func Test_NewCustomer(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			customer := NewCustomer(tt.params.customerID, tt.params.firstName, tt.params.lastName, tt.params.phone, tt.params.email, tt.params.address)
+			customer := NewCustomer(tt.params.customerID, tt.params.firstName, tt.params.lastName, tt.params.phone, tt.params.email, tt.params.dateOfBirth, tt.params.address)
 
 			// Event checks
 			require.Len(t, customer.Events, tt.expected.eventsNumber)
@@ -65,12 +67,13 @@ func Test_NewCustomer(t *testing.T) {
 func Test_Customer_Update_Name(t *testing.T) {
 
 	type testCaseParams struct {
-		updateType CustomerEventType
-		firstName  string
-		lastName   string
-		phone      string
-		email      string
-		address    Address
+		updateType  CustomerEventType
+		firstName   string
+		lastName    string
+		phone       string
+		email       string
+		dateOfBirth string
+		address     Address
 	}
 
 	type testCaseExpected struct {
@@ -79,6 +82,7 @@ func Test_Customer_Update_Name(t *testing.T) {
 		lastName     string
 		phone        string
 		email        string
+		dateOfBirth  string
 		address      Address
 		eventsNumber int
 		eventType    string
@@ -92,20 +96,22 @@ func Test_Customer_Update_Name(t *testing.T) {
 		{
 			name: "should update customer name",
 			params: testCaseParams{
-				updateType: CustomerUpdatedAllEventType,
-				firstName:  "John Second",
-				lastName:   "Doe Second",
-				phone:      "0987654321",
-				email:      "jane.doe@example.com",
-				address:    Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+				updateType:  CustomerUpdatedAllEventType,
+				firstName:   "John Second",
+				lastName:    "Doe Second",
+				phone:       "0987654321",
+				email:       "jane.doe@example.com",
+				dateOfBirth: "1990-01-01",
+				address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 			},
 			expected: testCaseExpected{
-				updateType: CustomerUpdatedAllEventType,
-				firstName:  "John Second",
-				lastName:   "Doe Second",
-				phone:      "0987654321",
-				email:      "jane.doe@example.com",
-				address:    Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+				updateType:  CustomerUpdatedAllEventType,
+				firstName:   "John Second",
+				lastName:    "Doe Second",
+				phone:       "0987654321",
+				email:       "jane.doe@example.com",
+				dateOfBirth: "1990-01-01",
+				address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 
 				eventsNumber: 2, // 1 for creation and 1 for update
 				eventType:    CustomerUpdatedAllEventType.String(),
@@ -121,15 +127,17 @@ func Test_Customer_Update_Name(t *testing.T) {
 				"Doe",
 				"1234567890",
 				"john.doe@example.com",
+				"1990-01-01",
 				Address{Street: "Street 1111", City: "Warsaw 2", State: "Masovian 4", PostalCode: "11-111", Country: "USA"},
 			)
 
-			customer.Update(tt.params.updateType, tt.params.firstName, tt.params.lastName, tt.params.phone, tt.params.email, tt.params.address)
+			customer.Update(tt.params.updateType, tt.params.firstName, tt.params.lastName, tt.params.phone, tt.params.email, tt.params.dateOfBirth, tt.params.address)
 
 			require.Equal(t, tt.expected.firstName, customer.FirstName)
 			require.Equal(t, tt.expected.lastName, customer.LastName)
 			require.Equal(t, tt.expected.phone, customer.Phone)
 			require.Equal(t, tt.expected.email, customer.Email)
+			require.Equal(t, tt.expected.dateOfBirth, customer.DateOfBirth)
 			require.True(t, customer.Address.compare(tt.expected.address))
 
 			require.Equal(t, tt.expected.eventsNumber, len(customer.Events))
@@ -178,6 +186,7 @@ func Test_Customer_Block(t *testing.T) {
 				"Doe",
 				"1234567890",
 				"john.doe@example.com",
+				"1990-01-01",
 				Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 			)
 
@@ -230,6 +239,7 @@ func Test_Customer_Unblock(t *testing.T) {
 				"Doe",
 				"1234567890",
 				"john.doe@example.com",
+				"1990-01-01",
 				Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 			)
 

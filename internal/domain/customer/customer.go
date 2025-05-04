@@ -1,6 +1,7 @@
 package customer
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -8,18 +9,28 @@ import (
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
+var (
+	// Er
+	ErrCustomerAlreadyExists = errors.New("customer already exists")
+	ErrCustomerNotFound      = errors.New("customer not found")
+	ErrCustomerEventNotFound = errors.New("customer event not found")
+)
+
+type CustomerOrigin = event.EventOrigin
+
 type Customer struct {
-	ID        uuid.UUID      `json:"id"`        // Unique identifier for the customer
-	FirstName string         `json:"firstName"` // First name of the customer
-	LastName  string         `json:"lastName"`  // Last name of the customer
-	Email     string         `json:"email"`     // Email address of the customer
-	Phone     string         `json:"phone"`     // Phone number of the customer
-	Address   Address        `json:"address"`   // Physical address of the customer
-	Status    CustomerStatus `json:"status"`    // Current status of the customer
-	Accounts  []string       `json:"accounts"`  // List of account IDs associated with the customer
-	CreatedAt time.Time      `json:"createdAt"` // When the customer was created
-	UpdatedAt time.Time      `json:"updatedAt"` // When the customer was last updated
-	Events    []Event        // List of events associated with the customer
+	ID          uuid.UUID      `json:"id"`          // Unique identifier for the customer
+	FirstName   string         `json:"firstName"`   // First name of the customer
+	LastName    string         `json:"lastName"`    // Last name of the customer
+	Email       string         `json:"email"`       // Email address of the customer
+	Phone       string         `json:"phone"`       // Phone number of the customer
+	DateOfBirth string         `json:"dateOfBirth"` // Date of birth of the customer
+	Address     Address        `json:"address"`     // Physical address of the customer
+	Status      CustomerStatus `json:"status"`      // Current status of the customer
+	Accounts    []string       `json:"accounts"`    // List of account IDs associated with the customer
+	CreatedAt   time.Time      `json:"createdAt"`   // When the customer was created
+	UpdatedAt   time.Time      `json:"updatedAt"`   // When the customer was last updated
+	Events      []Event        // List of events associated with the customer
 }
 
 // Address represents a physical address
@@ -53,43 +64,47 @@ func (a CustomerStatus) String() string {
 }
 
 // NewCustomer creates a new customer
-func NewCustomer(id uuid.UUID, firstName string, lastName string, phone string, email string, address Address) *Customer {
+func NewCustomer(id uuid.UUID, firstName string, lastName string, email string, phone string, dob string, address Address) *Customer {
 	now := time.Now().UTC()
 
 	customer := &Customer{
-		ID:        id,
-		FirstName: firstName,
-		LastName:  lastName,
-		Phone:     phone,
-		Email:     email,
-		Address:   address,
-		Status:    CustomerStatusActive, // TODO: change to inactive
-		Accounts:  []string{},
-		CreatedAt: now,
-		UpdatedAt: now,
-		Events:    []Event{},
+		ID:          id,
+		FirstName:   firstName,
+		LastName:    lastName,
+		Email:       email,
+		Phone:       phone,
+		DateOfBirth: dob,
+		Address:     address,
+		Status:      CustomerStatusActive, // TODO: change to inactive
+		Accounts:    []string{},
+		CreatedAt:   now,
+		UpdatedAt:   now,
+		Events:      []Event{},
 	}
+
+	origin := CustomerOrigin("customer")
 
 	customer.addEvent(
 		&CustomerCreatedEvent{
 			BaseEvent: event.BaseEvent{
 				ID:          uuid.New(),
 				ContextID:   id,
+				Origin:      origin.String(),
 				Type:        CustomerCreatedEventType.String(),
 				TypeVersion: "0.0.0",
 				State:       event.EventStateCreated.String(),
 				CreatedAt:   now,
-				CompletedAt: time.Time{},
 				ScheduledAt: now,
 				Retry:       0,
 				MaxRetry:    3,
 				Data:        nil,
 			},
-			FirstName: firstName,
-			LastName:  lastName,
-			Phone:     phone,
-			Email:     email,
-			Address:   address,
+			FirstName:   firstName,
+			LastName:    lastName,
+			Phone:       phone,
+			Email:       email,
+			DateOfBirth: dob,
+			Address:     address,
 		})
 
 	return customer
@@ -101,12 +116,15 @@ func (c *Customer) Activate() {
 	c.Status = CustomerStatusActive
 	c.UpdatedAt = now
 
+	origin := CustomerOrigin("customer")
+
 	c.Events = append(
 		c.Events,
 		&CustomerActivatedEvent{
 			BaseEvent: event.BaseEvent{
 				ID:          uuid.New(),
 				ContextID:   c.ID,
+				Origin:      origin.String(),
 				Type:        CustomerActivatedEventType.String(),
 				TypeVersion: "0.0.0",
 				State:       event.EventStateCreated.String(),
@@ -124,12 +142,15 @@ func (c *Customer) Deactivate() {
 	c.Status = CustomerStatusInactive
 	c.UpdatedAt = now
 
+	origin := CustomerOrigin("customer")
+
 	c.Events = append(
 		c.Events,
 		&CustomerDeactivatedEvent{
 			BaseEvent: event.BaseEvent{
 				ID:          uuid.New(),
 				ContextID:   c.ID,
+				Origin:      origin.String(),
 				Type:        CustomerDeactivatedEventType.String(),
 				TypeVersion: "0.0.0",
 				State:       event.EventStateCreated.String(),
@@ -147,12 +168,15 @@ func (c *Customer) Block(reason string) {
 	c.Status = CustomerStatusBlocked
 	c.UpdatedAt = now
 
+	origin := CustomerOrigin("customer")
+
 	c.Events = append(
 		c.Events,
 		&CustomerBlockedEvent{
 			BaseEvent: event.BaseEvent{
 				ID:          uuid.New(),
 				ContextID:   c.ID,
+				Origin:      origin.String(),
 				Type:        CustomerBlockedEventType.String(),
 				TypeVersion: "0.0.0",
 				State:       event.EventStateCreated.String(),
@@ -192,15 +216,19 @@ func (c *Customer) Update(
 	updateType CustomerEventType,
 	firstName, lastName string,
 	phone, email string,
+	dob string,
 	address Address,
 ) {
 	now := time.Now().UTC()
 	c.UpdatedAt = now
 
+	origin := CustomerOrigin("customer")
+
 	c.FirstName = firstName
 	c.LastName = lastName
 	c.Phone = phone
 	c.Email = email
+	c.DateOfBirth = dob
 	c.Address = address
 
 	c.Events = append(
@@ -209,6 +237,7 @@ func (c *Customer) Update(
 			BaseEvent: event.BaseEvent{
 				ID:          uuid.New(),
 				ContextID:   c.ID,
+				Origin:      origin.String(),
 				Type:        updateType.String(),
 				TypeVersion: "0.0.0",
 				State:       event.EventStateCreated.String(),
@@ -217,11 +246,12 @@ func (c *Customer) Update(
 				Retry:       0,
 				MaxRetry:    3,
 			},
-			FirstName: firstName,
-			LastName:  lastName,
-			Phone:     phone,
-			Email:     email,
-			Address:   address,
+			FirstName:   firstName,
+			LastName:    lastName,
+			Phone:       phone,
+			Email:       email,
+			DateOfBirth: dob,
+			Address:     address,
 		})
 }
 
@@ -230,10 +260,13 @@ func (c *Customer) Delete() {
 	c.UpdatedAt = now
 	c.Status = CustomerStatusInactive
 
+	origin := CustomerOrigin("customer")
+
 	c.Events = append(c.Events, &CustomerDeletedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.New(),
 			ContextID:   c.ID,
+			Origin:      origin.String(),
 			Type:        CustomerDeletedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),

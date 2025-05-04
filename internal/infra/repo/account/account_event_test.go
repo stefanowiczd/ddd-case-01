@@ -31,6 +31,7 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
 			ContextID:   id,
+			Origin:      accountdomain.AccountOrigin("account").String(),
 			Type:        accountdomain.AccountCreatedEventType.String(),
 			TypeVersion: "0.0.1",
 			State:       event.EventStateCreated.String(),
@@ -47,7 +48,7 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 	event.Data = data
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
-	require.ErrorIs(t, err, ErrNoRows)
+	require.ErrorIs(t, err, accountdomain.ErrAccountEventNotFound)
 
 	ID, err := repo.CreateAccountEvent(ctx, &event)
 	require.NoError(t, err)
@@ -55,10 +56,10 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 	ev, err = repo.FindAccountEventByID(ctx, ID)
 	require.NoError(t, err)
 	require.NotNil(t, ev)
-	require.Equal(t, event.GetType(), ev.EventType)
+	require.Equal(t, event.GetType(), ev.GetType())
 
 	restoredEvent := accountdomain.AccountCreatedEvent{}
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())
@@ -101,7 +102,7 @@ func TestAccountEventRepository_AccountBlockEvent(t *testing.T) {
 	}
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
-	require.ErrorIs(t, err, ErrNoRows)
+	require.ErrorIs(t, err, accountdomain.ErrAccountEventNotFound)
 
 	data, _ := json.Marshal(event)
 	event.Data = data
@@ -114,7 +115,7 @@ func TestAccountEventRepository_AccountBlockEvent(t *testing.T) {
 	require.NotNil(t, ev)
 
 	restoredEvent := accountdomain.AccountBlockedEvent{}
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())
@@ -155,7 +156,7 @@ func TestAccountEventRepository_AccountUnblockEvent(t *testing.T) {
 	}
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
-	require.ErrorIs(t, err, ErrNoRows)
+	require.ErrorIs(t, err, accountdomain.ErrAccountEventNotFound)
 
 	data, _ := json.Marshal(event)
 	event.Data = data
@@ -168,9 +169,9 @@ func TestAccountEventRepository_AccountUnblockEvent(t *testing.T) {
 	require.NotNil(t, ev)
 
 	restoredEvent := accountdomain.AccountUnblockedEvent{}
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
@@ -213,7 +214,7 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	}
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
-	require.ErrorIs(t, err, ErrNoRows)
+	require.ErrorIs(t, err, accountdomain.ErrAccountEventNotFound)
 
 	data, _ := json.Marshal(event)
 	event.Data = data
@@ -226,9 +227,9 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	require.NotNil(t, ev)
 
 	restoredEvent := accountdomain.FundsWithdrawnEvent{}
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
@@ -275,7 +276,7 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	}
 
 	ev, err := repo.FindAccountEventByID(ctx, id)
-	require.ErrorIs(t, err, ErrNoRows)
+	require.ErrorIs(t, err, accountdomain.ErrAccountEventNotFound)
 
 	data, _ := json.Marshal(event)
 	event.Data = data
@@ -288,7 +289,7 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	require.NotNil(t, ev)
 
 	restoredEvent := accountdomain.FundsDepositedEvent{}
-	require.NoError(t, json.Unmarshal(ev.EventData, &restoredEvent))
+	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())

@@ -12,19 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
-	query "github.com/stefanowiczd/ddd-case-01/internal/infra/repo/query"
-)
-
-const (
-	// POSTGRESQL_DUPLICATE_KEY_CODE is the code for a duplicate key value violation
-	POSTGRESQL_DUPLICATE_KEY_CODE = "23505"
-)
-
-var (
-	// ErrNoRows is returned when no rows are found in the result set
-	ErrNoRows = errors.New("no rows in result set")
-	// ErrDuplicateKey is returned when a duplicate key value violates a unique constraint definition
-	ErrDuplicateKey = errors.New("duplicate key value violates unique constraint definition")
+	"github.com/stefanowiczd/ddd-case-01/internal/infra/repo/query"
 )
 
 // AccountRepository is a repository for account operations
@@ -41,19 +29,42 @@ func NewAccountRepository(c *pgxpool.Pool) *AccountRepository {
 	}
 }
 
-// FindByID retrieves an account by its ID
-func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*accountdomain.Account, error) {
-	account, err := r.Q.FindAccountByID(
-		ctx,
-		pgtype.UUID{Bytes: id, Valid: true},
-	)
+// CreateAccount creates a new account
+func (r *AccountRepository) CreateAccount(ctx context.Context, acc *accountdomain.Account) (*accountdomain.Account, error) {
+	tx, err := r.Conn.Begin(ctx)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, accountdomain.ErrAccountNotFound
+		return nil, fmt.Errorf("starting transaction: create account: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	account, err := r.Q.CreateAccount(
+		ctx,
+		query.CreateAccountParams{
+			ID:            pgtype.UUID{Bytes: acc.ID, Valid: true},
+			CustomerID:    pgtype.UUID{Bytes: acc.CustomerID, Valid: true},
+			AccountNumber: acc.AccountNumber,
+			Balance:       acc.Balance,
+			Currency:      acc.Currency,
+			Status:        acc.Status.String(),
+			CreatedAt:     pgtype.Timestamp{Time: acc.CreatedAt, Valid: true},
+			UpdatedAt:     pgtype.Timestamp{Time: acc.UpdatedAt, Valid: true},
+		})
+	if err != nil {
+		var pgErr *pgconn.PgError
+		switch {
+		case errors.As(err, &pgErr):
+			switch pgErr.Code {
+			case query.POSTGRESQL_DUPLICATE_KEY_CODE:
+				return nil, fmt.Errorf("checking db error: executing query: create account: %w", accountdomain.ErrAccountAlreadyExists)
+			default:
+				return nil, fmt.Errorf("checking db error: executing query: create account: %w", err)
+			}
 		}
+		return nil, fmt.Errorf("executing query: create account: %w", err)
+	}
 
-		return nil, fmt.Errorf("finding account by id: %w", err)
-
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("committing transaction: create account: %w", err)
 	}
 
 	return &accountdomain.Account{
@@ -62,23 +73,22 @@ func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*accoun
 		Balance:       account.Balance,
 		Currency:      account.Currency,
 		Status:        accountdomain.AccountStatus(account.Status),
-		CreatedAt:     account.CreatedAt.Time,
-		UpdatedAt:     account.UpdatedAt.Time,
 	}, nil
 }
 
-// FindByAccountNumber retrieves an account by its account number
-func (r *AccountRepository) FindByAccountNumber(ctx context.Context, accountNumber string) (*accountdomain.Account, error) {
-	account, err := r.Q.FindAccountByNumber(
+// FindByID retrieves an account by its ID
+func (r *AccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*accountdomain.Account, error) {
+	account, err := r.Q.FindAccountByID(
 		ctx,
-		accountNumber,
+		pgtype.UUID{Bytes: id, Valid: true},
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("finding account by account number: %w", ErrNoRows)
+			return nil, fmt.Errorf("finding account by id: %w", accountdomain.ErrAccountNotFound)
 		}
 
-		return nil, fmt.Errorf("finding account by account number: %w", err)
+		return nil, fmt.Errorf("finding account by id: %w", err)
+
 	}
 
 	return &accountdomain.Account{
@@ -99,9 +109,8 @@ func (r *AccountRepository) FindByCustomerID(ctx context.Context, customerID uui
 		pgtype.UUID{Bytes: customerID, Valid: true},
 	)
 	if err != nil {
-		// TODO change to return empty list if no rows are found
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("finding accounts by customer id: %w", ErrNoRows)
+			return []*accountdomain.Account{}, nil
 		}
 
 		return nil, fmt.Errorf("finding accounts by customer id: %w", err)
@@ -120,48 +129,4 @@ func (r *AccountRepository) FindByCustomerID(ctx context.Context, customerID uui
 		})
 	}
 	return accountsDomain, nil
-}
-
-// CreateAccount creates a new account
-func (r *AccountRepository) CreateAccount(ctx context.Context, acc *accountdomain.Account) (*accountdomain.Account, error) {
-	tx, err := r.Conn.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("starting transaction: create account: %w", err)
-	}
-	defer func() { _ = tx.Rollback(ctx) }()
-
-	account, err := r.Q.CreateAccount(
-		ctx,
-		query.CreateAccountParams{
-			CustomerID:    pgtype.UUID{Bytes: acc.CustomerID, Valid: true},
-			AccountNumber: acc.AccountNumber,
-			Balance:       acc.Balance,
-			Currency:      acc.Currency,
-			Status:        string(acc.Status),
-		})
-	if err != nil {
-		var pgErr *pgconn.PgError
-		switch {
-		case errors.As(err, &pgErr):
-			switch pgErr.Code {
-			case POSTGRESQL_DUPLICATE_KEY_CODE:
-				return nil, fmt.Errorf("checking db error: executing query: create account: %w", ErrDuplicateKey)
-			default:
-				return nil, fmt.Errorf("checking db error: executing query: create account: %w", err)
-			}
-		}
-		return nil, fmt.Errorf("executing query: create account: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("committing transaction: create account: %w", err)
-	}
-
-	return &accountdomain.Account{
-		ID:            account.ID.Bytes,
-		AccountNumber: account.AccountNumber,
-		Balance:       account.Balance,
-		Currency:      account.Currency,
-		Status:        accountdomain.AccountStatus(account.Status),
-	}, nil
 }

@@ -16,6 +16,7 @@ import (
 func compareCustomerBaseEvents(t *testing.T, event, restoredEvent Event) {
 	require.Equal(t, event.GetID(), restoredEvent.GetID())
 	require.Equal(t, event.GetContextID(), restoredEvent.GetContextID())
+	require.Equal(t, event.GetOrigin(), restoredEvent.GetOrigin())
 	require.Equal(t, event.GetType(), restoredEvent.GetType())
 	require.Equal(t, event.GetTypeVersion(), restoredEvent.GetTypeVersion())
 	require.Equal(t, event.GetState(), restoredEvent.GetState())
@@ -30,11 +31,13 @@ func Test_CustomerCreatedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := CustomerOrigin("customer")
 
 	event := &CustomerCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        string(CustomerCreatedEventType),
 			TypeVersion: "0.0.0",
 			State:       string(event.EventStateCreated),
@@ -44,10 +47,11 @@ func Test_CustomerCreatedEvent(t *testing.T) {
 			MaxRetry:    3,
 			Data:        nil,
 		},
-		FirstName: "John",
-		LastName:  "Doe",
-		Phone:     "1234567890",
-		Email:     "john.doe@example.com",
+		FirstName:   "John",
+		LastName:    "Doe",
+		Phone:       "1234567890",
+		Email:       "john.doe@example.com",
+		DateOfBirth: "1990-01-01",
 		Address: Address{
 			Street:     "Street 1",
 			City:       "Warsaw",
@@ -71,6 +75,7 @@ func Test_CustomerCreatedEvent(t *testing.T) {
 	require.Equal(t, event.LastName, restoredEvent.LastName)
 	require.Equal(t, event.Phone, restoredEvent.Phone)
 	require.Equal(t, event.Email, restoredEvent.Email)
+	require.Equal(t, event.DateOfBirth, restoredEvent.DateOfBirth)
 	require.Equal(t, event.Address, restoredEvent.Address)
 }
 
@@ -216,10 +221,11 @@ func Test_CustomerUpdatedEvent_Name(t *testing.T) {
 			Retry:       0,
 			MaxRetry:    3,
 		},
-		FirstName: "John",
-		LastName:  "Doe",
-		Phone:     "1234567890",
-		Email:     "john.doe@example.com",
+		FirstName:   "John",
+		LastName:    "Doe",
+		Phone:       "1234567890",
+		Email:       "john.doe@example.com",
+		DateOfBirth: "1990-01-01",
 		Address: Address{
 			Street:     "Street 1",
 			City:       "Warsaw",
@@ -243,6 +249,7 @@ func Test_CustomerUpdatedEvent_Name(t *testing.T) {
 	require.Equal(t, event.LastName, restoredEvent.LastName)
 	require.Equal(t, event.Phone, restoredEvent.Phone)
 	require.Equal(t, event.Email, restoredEvent.Email)
+	require.Equal(t, event.DateOfBirth, restoredEvent.DateOfBirth)
 	require.Equal(t, event.Address, restoredEvent.Address)
 }
 
@@ -263,10 +270,11 @@ func Test_CustomerUpdatedEvent_Contact(t *testing.T) {
 			Retry:       0,
 			MaxRetry:    3,
 		},
-		FirstName: "John",
-		LastName:  "Doe",
-		Phone:     "1234567890",
-		Email:     "john.doe@example.com",
+		FirstName:   "John",
+		LastName:    "Doe",
+		Phone:       "1234567890",
+		Email:       "john.doe@example.com",
+		DateOfBirth: "1990-01-01",
 		Address: Address{
 			Street:     "Street 1",
 			City:       "Warsaw",
@@ -290,6 +298,7 @@ func Test_CustomerUpdatedEvent_Contact(t *testing.T) {
 	require.Equal(t, event.LastName, restoredEvent.LastName)
 	require.Equal(t, event.Phone, restoredEvent.Phone)
 	require.Equal(t, event.Email, restoredEvent.Email)
+	require.Equal(t, event.DateOfBirth, restoredEvent.DateOfBirth)
 	require.Equal(t, event.Address, restoredEvent.Address)
 }
 
@@ -310,10 +319,11 @@ func Test_CustomerUpdatedEvent_Address(t *testing.T) {
 			Retry:       0,
 			MaxRetry:    3,
 		},
-		FirstName: "John",
-		LastName:  "Doe",
-		Phone:     "1234567890",
-		Email:     "john.doe@example.com",
+		FirstName:   "John",
+		LastName:    "Doe",
+		Phone:       "1234567890",
+		Email:       "john.doe@example.com",
+		DateOfBirth: "1990-01-01",
 		Address: Address{
 			Street:     "Street 1",
 			City:       "Warsaw",
@@ -357,10 +367,11 @@ func Test_CustomerUpdatedEvent_All(t *testing.T) {
 			Retry:       0,
 			MaxRetry:    3,
 		},
-		FirstName: "John",
-		LastName:  "Doe",
-		Phone:     "1234567890",
-		Email:     "john.doe@example.com",
+		FirstName:   "John",
+		LastName:    "Doe",
+		Phone:       "1234567890",
+		Email:       "john.doe@example.com",
+		DateOfBirth: "1990-01-01",
 		Address: Address{
 			Street:     "Street 1",
 			City:       "Warsaw",
@@ -384,6 +395,7 @@ func Test_CustomerUpdatedEvent_All(t *testing.T) {
 	require.Equal(t, event.LastName, restoredEvent.LastName)
 	require.Equal(t, event.Phone, restoredEvent.Phone)
 	require.Equal(t, event.Email, restoredEvent.Email)
+	require.Equal(t, event.DateOfBirth, restoredEvent.DateOfBirth)
 	require.Equal(t, event.Address, restoredEvent.Address)
 }
 

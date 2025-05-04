@@ -31,11 +31,12 @@ const (
 // AccountCreatedEvent is emitted when a new account is created
 type CustomerCreatedEvent struct {
 	event.BaseEvent
-	FirstName string  `json:"firstName"`
-	LastName  string  `json:"lastName"`
-	Phone     string  `json:"phone"`
-	Email     string  `json:"email"`
-	Address   Address `json:"address"`
+	FirstName   string  `json:"firstName"`
+	LastName    string  `json:"lastName"`
+	Phone       string  `json:"phone"`
+	Email       string  `json:"email"`
+	DateOfBirth string  `json:"dateOfBirth"`
+	Address     Address `json:"address"`
 }
 
 // CustomerActivatedEvent is emitted when a customer is activated
@@ -62,11 +63,12 @@ type CustomerUnblockedEvent struct {
 // CustomerUpdatedEvent is emitted when a customer is updated
 type CustomerUpdatedEvent struct {
 	event.BaseEvent
-	FirstName string  `json:"firstName"`
-	LastName  string  `json:"lastName"`
-	Phone     string  `json:"phone"`
-	Email     string  `json:"email"`
-	Address   Address `json:"address"`
+	FirstName   string  `json:"firstName"`
+	LastName    string  `json:"lastName"`
+	Phone       string  `json:"phone"`
+	Email       string  `json:"email"`
+	DateOfBirth string  `json:"dateOfBirth"`
+	Address     Address `json:"address"`
 }
 
 // CustomerDeletedEvent is emitted when a customer is deleted

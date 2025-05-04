@@ -6,11 +6,12 @@ import (
 	"context"
 	"log"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
-	"github.com/stefanowiczd/ddd-case-01/internal/domain/account"
+	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
 )
 
 func TestAccountRepository_FindByID_NoRows(t *testing.T) {
@@ -24,7 +25,7 @@ func TestAccountRepository_FindByID_NoRows(t *testing.T) {
 
 	acc, err := repo.FindByID(ctx, uuid.New())
 
-	require.ErrorIs(t, err, account.ErrAccountNotFound)
+	require.ErrorIs(t, err, accountdomain.ErrAccountNotFound)
 	require.Nil(t, acc)
 
 	accs, err := repo.FindByCustomerID(ctx, uuid.New())
@@ -50,4 +51,37 @@ func TestAccountRepository_FindBy(t *testing.T) {
 	customerID := uuid.MustParse("00000000-0000-0000-0000-000000000000")
 	accs, err := repo.FindByCustomerID(ctx, customerID)
 	require.Len(t, accs, 1)
+}
+
+func TestAccountRepository_CreateAccount(t *testing.T) {
+	ctx := context.Background()
+	keepContainer := false
+	pool, address := setupTestDB(t, keepContainer)
+
+	log.Printf("container address: %s", address)
+
+	repo := NewAccountRepository(pool)
+
+	a := &accountdomain.Account{
+		ID:            uuid.MustParse("00000000-0000-0000-0000-111111111111"),
+		CustomerID:    uuid.MustParse("00000000-0000-0000-0000-000000000000"),
+		AccountNumber: "1111111111",
+		Balance:       1000,
+		Currency:      "USD",
+		Status:        accountdomain.AccountStatusActive,
+		CreatedAt:     time.Now().UTC(),
+		UpdatedAt:     time.Now().UTC(),
+	}
+
+	acc, err := repo.CreateAccount(ctx, a)
+
+	require.NoError(t, err)
+	require.NotNil(t, acc)
+
+	acc, err = repo.FindByID(ctx, uuid.MustParse("00000000-0000-0000-0000-111111111111"))
+	require.NoError(t, err)
+	require.NotNil(t, acc)
+
+	_, err = repo.CreateAccount(ctx, a)
+	require.ErrorIs(t, err, accountdomain.ErrAccountAlreadyExists)
 }

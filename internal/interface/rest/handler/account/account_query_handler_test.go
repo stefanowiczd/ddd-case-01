@@ -95,7 +95,7 @@ func TestAccountHandler_GetAccount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewQueryHandler(tt.params.mockAccountQueryService(ctrl))
+			handler := NewAccountQueryHandler(tt.params.mockAccountQueryService(ctrl))
 
 			req := httptest.NewRequest(http.MethodGet, "/account/{id}", nil)
 			req.SetPathValue("id", tt.params.req.AccountID)
@@ -195,7 +195,7 @@ func TestAccountHandler_GetCustomerAccounts(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewQueryHandler(tt.params.mockAccountQueryService(ctrl))
+			handler := NewAccountQueryHandler(tt.params.mockAccountQueryService(ctrl))
 
 			req := httptest.NewRequest(http.MethodGet, "/customers/{customerId}/accounts", nil)
 			req.SetPathValue("customerId", tt.params.req.CustomerID)

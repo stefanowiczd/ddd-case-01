@@ -39,11 +39,12 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 			name: "shouldn't create customer - customer already exists",
 			params: testCaseParams{
 				dto: CreateCustomerDTO{
-					FirstName: "John",
-					LastName:  "Doe",
-					Email:     "john.doe@example.com",
-					Phone:     "1234567890",
-					Address:   Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "1234567890",
+					DateOfBirth: "1900-01-01",
+					Address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
@@ -65,11 +66,12 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 			name: "shouldn't create customer - customer query repository error",
 			params: testCaseParams{
 				dto: CreateCustomerDTO{
-					FirstName: "John",
-					LastName:  "Doe",
-					Email:     "john.doe@example.com",
-					Phone:     "1234567890",
-					Address:   Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "1234567890",
+					DateOfBirth: "1900-01-01",
+					Address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
@@ -90,11 +92,12 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 			name: "shouldn't create customer - customer create event repository error",
 			params: testCaseParams{
 				dto: CreateCustomerDTO{
-					FirstName: "John",
-					LastName:  "Doe",
-					Email:     "john.doe@example.com",
-					Phone:     "1234567890",
-					Address:   Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "1234567890",
+					DateOfBirth: "1900-01-01",
+					Address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)
@@ -118,11 +121,12 @@ func TestCustomerService_CreateCustomer(t *testing.T) {
 			name: "should create customer",
 			params: testCaseParams{
 				dto: CreateCustomerDTO{
-					FirstName: "John",
-					LastName:  "Doe",
-					Email:     "john.doe@example.com",
-					Phone:     "1234567890",
-					Address:   Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "1234567890",
+					DateOfBirth: "1900-01-01",
+					Address:     Address{Street: "Street 1", City: "Warsaw", State: "Masovian", PostalCode: "00-000", Country: "Poland"},
 				},
 				mockCustomerQueryRepo: func(m *gomock.Controller) *mock.MockCustomerQueryRepository {
 					mock := mock.NewMockCustomerQueryRepository(m)

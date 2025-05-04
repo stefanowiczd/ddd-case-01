@@ -1,53 +1,54 @@
-package account
+package customer
 
 import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
+	customerdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/customer"
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 	"github.com/stefanowiczd/ddd-case-01/internal/infra/repo/query"
 )
 
-// AccountEventRepository is a repository for account event operations
-type AccountEventRepository struct {
+// CustomerEventRepository is a repository for customer event operations
+type CustomerEventRepository struct {
 	Conn *pgxpool.Pool
 	Q    *query.Queries
 }
 
-// NewAccountEventRepository creates a new account event repository
-func NewAccountEventRepository(c *pgxpool.Pool) *AccountEventRepository {
-	return &AccountEventRepository{
-		Conn: c,
-		Q:    query.New(c),
+// NewCustomerEventRepository creates a new customer event repository
+func NewCustomerEventRepository(conn *pgxpool.Pool) *CustomerEventRepository {
+	return &CustomerEventRepository{
+		Conn: conn,
+		Q:    query.New(conn),
 	}
 }
 
-// CreateAccountEvent creates an account event
-func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventObject BaseEvent) (uuid.UUID, error) {
+func (r *CustomerEventRepository) CreateCustomerEvent(ctx context.Context, eventObject BaseEvent) (uuid.UUID, error) {
 	switch eventObject.(type) {
-	case *accountdomain.AccountCreatedEvent,
-		*accountdomain.AccountBlockedEvent,
-		*accountdomain.AccountUnblockedEvent,
-		*accountdomain.FundsWithdrawnEvent,
-		*accountdomain.FundsDepositedEvent:
+	case *customerdomain.CustomerCreatedEvent,
+		*customerdomain.CustomerUpdatedEvent,
+		*customerdomain.CustomerDeletedEvent,
+		*customerdomain.CustomerActivatedEvent,
+		*customerdomain.CustomerDeactivatedEvent,
+		*customerdomain.CustomerBlockedEvent,
+		*customerdomain.CustomerUnblockedEvent:
 
 		tx, err := r.Conn.Begin(ctx)
 		if err != nil {
-			return uuid.UUID{}, fmt.Errorf("starting transaction: creating account event: %w", err)
+			return uuid.UUID{}, fmt.Errorf("starting transaction: creating customer event: %w", err)
 		}
 		defer func() { _ = tx.Rollback(ctx) }()
 
 		qtx := r.Q.WithTx(tx)
 
-		accountEvent, err := qtx.CreateAccountEvent(
+		customerEvent, err := qtx.CreateCustomerEvent(
 			ctx,
-			query.CreateAccountEventParams{
+			query.CreateCustomerEventParams{
 				ID:               pgtype.UUID{Bytes: eventObject.GetID(), Valid: true},
 				ContextID:        pgtype.UUID{Bytes: eventObject.GetContextID(), Valid: true},
 				EventOrigin:      eventObject.GetOrigin(),
@@ -62,27 +63,27 @@ func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventOb
 			},
 		)
 		if err != nil {
-			return uuid.Nil, fmt.Errorf("creating account event: %w", err)
+			return uuid.Nil, fmt.Errorf("creating customer event: %w", err)
 		}
 
 		if err = tx.Commit(ctx); err != nil {
-			return uuid.UUID{}, fmt.Errorf("committing transaction: creating account event: %w", err)
+			return uuid.UUID{}, fmt.Errorf("committing transaction: creating customer event: %w", err)
 		}
-		return accountEvent.ID.Bytes, nil
+
+		return customerEvent.ID.Bytes, nil
 	default:
-		return uuid.Nil, fmt.Errorf("casting account event: event type not recognized")
+		return uuid.Nil, fmt.Errorf("casting customer event: event type not recognized")
 	}
 }
 
-// FindAccountEventByID finds an account event by id
-func (r *AccountEventRepository) FindAccountEventByID(ctx context.Context, id uuid.UUID) (BaseEvent, error) {
-	ev, err := r.Q.FindAccountEventByID(ctx, pgtype.UUID{Bytes: id, Valid: true})
+func (r *CustomerEventRepository) FindCustomerEventByID(ctx context.Context, id uuid.UUID) (BaseEvent, error) {
+	ev, err := r.Q.FindCustomerEventByID(ctx, pgtype.UUID{Bytes: id, Valid: true})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return &event.BaseEvent{}, fmt.Errorf("finding account event by id: %w", accountdomain.ErrAccountEventNotFound)
+			return &event.BaseEvent{}, fmt.Errorf("finding customer event by id: %w", customerdomain.ErrCustomerEventNotFound)
 		}
 
-		return &event.BaseEvent{}, fmt.Errorf("finding account event by id: %w", err)
+		return &event.BaseEvent{}, fmt.Errorf("finding customer event by id: %w", err)
 	}
 
 	return &event.BaseEvent{

@@ -10,9 +10,13 @@ import (
 )
 
 var (
-	ErrInsufficientFunds = errors.New("insufficient funds")
-	ErrAccountNotFound   = errors.New("account not found")
+	ErrInsufficientFunds    = errors.New("insufficient funds")
+	ErrAccountNotFound      = errors.New("account not found")
+	ErrAccountEventNotFound = errors.New("account event not found")
+	ErrAccountAlreadyExists = errors.New("account already exists")
 )
+
+type AccountOrigin = event.EventOrigin
 
 // AccountType represents the type of bank account
 type AccountType string
@@ -71,15 +75,17 @@ func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalanc
 		events:        make([]Event, 0),
 	}
 
+	origin := AccountOrigin("account")
+
 	account.addEvent(&AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
+			ID:          uuid.New(),
 			ContextID:   id,
+			Origin:      origin.String(),
 			Type:        AccountCreatedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
-			CompletedAt: time.Time{},
 			ScheduledAt: now,
 			Retry:       0,
 			MaxRetry:    3,
@@ -99,15 +105,17 @@ func (a *Account) Block() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusBlocked
 
+	origin := AccountOrigin("account")
+
 	a.addEvent(&AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
+			ID:          uuid.New(),
 			ContextID:   a.ID,
+			Origin:      origin.String(),
 			Type:        AccountBlockedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
-			CompletedAt: time.Time{},
 			ScheduledAt: now,
 			Retry:       0,
 			MaxRetry:    3,
@@ -123,15 +131,17 @@ func (a *Account) Unblock() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusActive
 
+	origin := AccountOrigin("account")
+
 	a.addEvent(&AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
+			ID:          uuid.New(),
 			ContextID:   a.ID,
+			Origin:      origin.String(),
 			Type:        AccountUnblockedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
-			CompletedAt: time.Time{},
 			ScheduledAt: now,
 			Retry:       0,
 			MaxRetry:    3,
@@ -147,15 +157,17 @@ func (a *Account) Deposit(amount float64) {
 	a.Balance += amount
 	a.UpdatedAt = now
 
+	origin := AccountOrigin("account")
+
 	a.addEvent(&FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
+			ID:          uuid.New(),
 			ContextID:   a.ID,
+			Origin:      origin.String(),
 			Type:        AccountFundsDepositedEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
-			CompletedAt: time.Time{},
 			ScheduledAt: now,
 			Retry:       0,
 			MaxRetry:    3,
@@ -175,15 +187,17 @@ func (a *Account) Withdraw(amount float64) error {
 	a.Balance -= amount
 	a.UpdatedAt = now
 
+	origin := AccountOrigin("account")
+
 	a.addEvent(&FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
-			ID:          generateEventID(),
+			ID:          uuid.New(),
 			ContextID:   a.ID,
+			Origin:      origin.String(),
 			Type:        AccountFundsWithdrawnEventType.String(),
 			TypeVersion: "0.0.0",
 			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
-			CompletedAt: time.Time{},
 			ScheduledAt: now,
 			Retry:       0,
 			MaxRetry:    3,

@@ -1,6 +1,6 @@
 //go:build integration
 
-package account
+package customer
 
 import (
 	"context"

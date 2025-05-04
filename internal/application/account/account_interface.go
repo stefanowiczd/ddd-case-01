@@ -26,7 +26,7 @@ type AccountQueryRepository interface {
 
 // AccountEventRepository defines the interface for account event persistence
 type AccountEventRepository interface {
-	// CreateEvent persists an account event
+	// CreateEvents persists an account event
 	CreateEvents(ctx context.Context, events []accountdomain.Event) error
 }
 

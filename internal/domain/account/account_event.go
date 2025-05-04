@@ -2,6 +2,7 @@ package account
 
 import (
 	"github.com/google/uuid"
+
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
@@ -55,9 +56,4 @@ type AccountBlockedEvent struct {
 // AccountUnblockedEvent is emitted when an account is unblocked
 type AccountUnblockedEvent struct {
 	event.BaseEvent
-}
-
-// generateEventID creates a unique identifier for an event
-func generateEventID() uuid.UUID {
-	return uuid.New()
 }

@@ -157,7 +157,7 @@ func TestAccountHandler_CreateAccount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewHandler(tt.params.mockAccountService(ctrl))
+			handler := NewAccountHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, "/account", tt.params.reqBody(tt.params.req))
 			w := httptest.NewRecorder()
@@ -296,7 +296,7 @@ func TestAccountHandler_Deposit(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewHandler(tt.params.mockAccountService(ctrl))
+			handler := NewAccountHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/deposit", tt.params.accountID), tt.params.reqBody(tt.params.req))
 			req.SetPathValue("id", tt.params.accountID)
@@ -433,7 +433,7 @@ func TestAccountHandler_Withdraw(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewHandler(tt.params.mockAccountService(ctrl))
+			handler := NewAccountHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/withdraw", tt.params.accountID), tt.params.reqBody(tt.params.req))
 			req.SetPathValue("id", tt.params.accountID)
@@ -528,7 +528,7 @@ func TestAccountHandler_BlockAccount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewHandler(tt.params.mockAccountService(ctrl))
+			handler := NewAccountHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/block", tt.params.accountID), nil)
 			req.SetPathValue("id", tt.params.accountID)
@@ -623,7 +623,7 @@ func TestAccountHandler_UnblockAccount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			handler := NewHandler(tt.params.mockAccountService(ctrl))
+			handler := NewAccountHandler(tt.params.mockAccountService(ctrl))
 
 			req := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/accounts/%s/unblock", tt.params.accountID), nil)
 			req.SetPathValue("id", tt.params.accountID)
