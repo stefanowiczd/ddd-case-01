@@ -31,7 +31,7 @@ func TestAccountEventRepository_CreateAccountEvent(t *testing.T) {
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
 			ContextID:   id,
-			Origin:      accountdomain.AccountOrigin("account").String(),
+			Origin:      accountdomain.EventOrigin("account").String(),
 			Type:        accountdomain.AccountCreatedEventType.String(),
 			TypeVersion: "0.0.1",
 			State:       event.EventStateCreated.String(),

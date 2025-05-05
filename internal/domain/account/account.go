@@ -16,7 +16,7 @@ var (
 	ErrAccountAlreadyExists = errors.New("account already exists")
 )
 
-type AccountOrigin = event.EventOrigin
+type EventOrigin = event.EventOrigin
 
 // AccountType represents the type of bank account
 type AccountType string
@@ -46,19 +46,6 @@ type Account struct {
 	events        []Event       // List of domain events that occurred on this account
 }
 
-// AccountStatus represents the possible states of an account
-type AccountStatus string
-
-const (
-	AccountStatusInactive AccountStatus = "inactive" // Account is active and can perform transactions
-	AccountStatusActive   AccountStatus = "active"   // Account is active and can perform transactions
-	AccountStatusBlocked  AccountStatus = "blocked"  // Account is blocked and cannot perform transactions
-)
-
-func (s AccountStatus) String() string {
-	return string(s)
-}
-
 // NewAccount creates a new account with the given ID and initial balance.
 // It automatically sets the account status to active and records the creation event.
 func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalance float64, currency string) *Account {
@@ -75,7 +62,7 @@ func NewAccount(id uuid.UUID, customerID uuid.UUID, number string, initialBalanc
 		events:        make([]Event, 0),
 	}
 
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	account.addEvent(&AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
@@ -105,7 +92,7 @@ func (a *Account) Block() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusBlocked
 
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	a.addEvent(&AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
@@ -131,7 +118,7 @@ func (a *Account) Unblock() {
 	a.UpdatedAt = now
 	a.Status = AccountStatusActive
 
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	a.addEvent(&AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
@@ -157,7 +144,7 @@ func (a *Account) Deposit(amount float64) {
 	a.Balance += amount
 	a.UpdatedAt = now
 
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	a.addEvent(&FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
@@ -187,7 +174,7 @@ func (a *Account) Withdraw(amount float64) error {
 	a.Balance -= amount
 	a.UpdatedAt = now
 
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	a.addEvent(&FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{

@@ -31,16 +31,16 @@ func Test_AccountCreatedEvent(t *testing.T) {
 	accountID := uuid.New()
 	customerID := uuid.New()
 	now := time.Now().UTC()
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	event := &AccountCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   accountID,
 			Origin:      origin.String(),
-			Type:        string(AccountCreatedEventType),
+			Type:        AccountCreatedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -69,7 +69,7 @@ func Test_AccountBlockedEvent(t *testing.T) {
 	eventID := uuid.New()
 	accountID := uuid.New()
 	now := time.Now().UTC()
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	event := &AccountBlockedEvent{
 		BaseEvent: event.BaseEvent{
@@ -102,7 +102,7 @@ func Test_AccountUnblockedEvent(t *testing.T) {
 	eventID := uuid.New()
 	accountID := uuid.New()
 	now := time.Now().UTC()
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	event := &AccountUnblockedEvent{
 		BaseEvent: event.BaseEvent{
@@ -135,7 +135,7 @@ func Test_FundsWithdrawnEvent(t *testing.T) {
 	eventID := uuid.New()
 	accountID := uuid.New()
 	now := time.Now().UTC()
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	event := &FundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
@@ -175,7 +175,7 @@ func Test_FundsDepositedEvent(t *testing.T) {
 	eventID := uuid.New()
 	accountID := uuid.New()
 	now := time.Now().UTC()
-	origin := AccountOrigin("account")
+	origin := EventOrigin("account")
 
 	event := &FundsDepositedEvent{
 		BaseEvent: event.BaseEvent{

@@ -32,7 +32,7 @@ func TestCustomerEventRepository_CreateCustomerEvent(t *testing.T) {
 		BaseEvent: event.BaseEvent{
 			ID:          id,
 			ContextID:   uuid.MustParse("00000000-0000-0000-0000-111111111111"),
-			Origin:      customerdomain.CustomerOrigin("customer").String(),
+			Origin:      customerdomain.EventOrigin("customer").String(),
 			Type:        customerdomain.CustomerCreatedEventType.String(),
 			TypeVersion: "1.0.0",
 			State:       event.EventStateCreated.String(),

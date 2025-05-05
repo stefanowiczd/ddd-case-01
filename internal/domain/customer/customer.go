@@ -10,13 +10,16 @@ import (
 )
 
 var (
-	// Er
+	// ErrCustomerAlreadyExists is returned when a customer already exists
 	ErrCustomerAlreadyExists = errors.New("customer already exists")
-	ErrCustomerNotFound      = errors.New("customer not found")
+	// ErrCustomerNotFound is returned when a customer is not found
+	ErrCustomerNotFound = errors.New("customer not found")
+	// ErrCustomerEventNotFound is returned when a customer event is not found
 	ErrCustomerEventNotFound = errors.New("customer event not found")
 )
 
-type CustomerOrigin = event.EventOrigin
+// EventOrigin it is used to identify the source of the event
+type EventOrigin = event.EventOrigin
 
 type Customer struct {
 	ID          uuid.UUID      `json:"id"`          // Unique identifier for the customer
@@ -31,36 +34,6 @@ type Customer struct {
 	CreatedAt   time.Time      `json:"createdAt"`   // When the customer was created
 	UpdatedAt   time.Time      `json:"updatedAt"`   // When the customer was last updated
 	Events      []Event        // List of events associated with the customer
-}
-
-// Address represents a physical address
-type Address struct {
-	Street     string `json:"street"`     // Street name and number
-	City       string `json:"city"`       // City name
-	State      string `json:"state"`      // State or province
-	PostalCode string `json:"postalCode"` // Postal or ZIP code
-	Country    string `json:"country"`    // Country name
-}
-
-func (a Address) compare(b Address) bool { //nolint:unused
-	return a.Street == b.Street &&
-		a.City == b.City &&
-		a.State == b.State &&
-		a.PostalCode == b.PostalCode &&
-		a.Country == b.Country
-}
-
-// CustomerStatus represents the status of a customer
-type CustomerStatus string
-
-const (
-	CustomerStatusActive   CustomerStatus = "active"
-	CustomerStatusInactive CustomerStatus = "inactive"
-	CustomerStatusBlocked  CustomerStatus = "blocked"
-)
-
-func (a CustomerStatus) String() string {
-	return string(a)
 }
 
 // NewCustomer creates a new customer
@@ -82,7 +55,7 @@ func NewCustomer(id uuid.UUID, firstName string, lastName string, email string, 
 		Events:      []Event{},
 	}
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	customer.addEvent(
 		&CustomerCreatedEvent{
@@ -116,7 +89,7 @@ func (c *Customer) Activate() {
 	c.Status = CustomerStatusActive
 	c.UpdatedAt = now
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	c.Events = append(
 		c.Events,
@@ -142,7 +115,7 @@ func (c *Customer) Deactivate() {
 	c.Status = CustomerStatusInactive
 	c.UpdatedAt = now
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	c.Events = append(
 		c.Events,
@@ -168,7 +141,7 @@ func (c *Customer) Block(reason string) {
 	c.Status = CustomerStatusBlocked
 	c.UpdatedAt = now
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	c.Events = append(
 		c.Events,
@@ -222,7 +195,7 @@ func (c *Customer) Update(
 	now := time.Now().UTC()
 	c.UpdatedAt = now
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	c.FirstName = firstName
 	c.LastName = lastName
@@ -260,7 +233,7 @@ func (c *Customer) Delete() {
 	c.UpdatedAt = now
 	c.Status = CustomerStatusInactive
 
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	c.Events = append(c.Events, &CustomerDeletedEvent{
 		BaseEvent: event.BaseEvent{

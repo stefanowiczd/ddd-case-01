@@ -31,16 +31,16 @@ func Test_CustomerCreatedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
-	origin := CustomerOrigin("customer")
+	origin := EventOrigin("customer")
 
 	event := &CustomerCreatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
 			Origin:      origin.String(),
-			Type:        string(CustomerCreatedEventType),
+			Type:        CustomerCreatedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -83,14 +83,16 @@ func Test_CustomerActivatedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerActivatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
-			Type:        string(CustomerActivatedEventType),
+			Origin:      origin.String(),
+			Type:        CustomerActivatedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -114,14 +116,16 @@ func Test_CustomerDeactivatedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerDeactivatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
-			Type:        string(CustomerDeactivatedEventType),
+			Origin:      origin.String(),
+			Type:        CustomerDeactivatedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -145,14 +149,16 @@ func Test_CustomerBlockedEvent(t *testing.T) {
 	eventID := uuid.New()
 	customerID := uuid.New()
 	reason := "Blocked by customer"
+	origin := EventOrigin("customer")
 
 	event := &CustomerBlockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
-			Type:        string(CustomerBlockedEventType),
+			Origin:      origin.String(),
+			Type:        CustomerBlockedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -178,14 +184,16 @@ func Test_CustomerUnblockedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerUnblockedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
-			Type:        string(CustomerUnblockedEventType),
+			Origin:      origin.String(),
+			Type:        CustomerUnblockedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -208,14 +216,16 @@ func Test_CustomerUpdatedEvent_Name(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerUpdatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        CustomerUpdatedNameEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -257,14 +267,16 @@ func Test_CustomerUpdatedEvent_Contact(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerUpdatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        CustomerUpdatedContactEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -306,14 +318,16 @@ func Test_CustomerUpdatedEvent_Address(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerUpdatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        CustomerUpdatedAddressEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -354,14 +368,16 @@ func Test_CustomerUpdatedEvent_All(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerUpdatedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        CustomerUpdatedAllEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
@@ -403,14 +419,16 @@ func Test_CustomerDeletedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	eventID := uuid.New()
 	customerID := uuid.New()
+	origin := EventOrigin("customer")
 
 	event := &CustomerDeletedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   customerID,
+			Origin:      origin.String(),
 			Type:        CustomerDeletedEventType.String(),
 			TypeVersion: "0.0.0",
-			State:       string(event.EventStateCreated),
+			State:       event.EventStateCreated.String(),
 			CreatedAt:   now,
 			ScheduledAt: now,
 			Retry:       0,
