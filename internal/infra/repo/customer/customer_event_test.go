@@ -35,7 +35,7 @@ func TestCustomerEventRepository_CreateCustomerEvent(t *testing.T) {
 			Origin:      customerdomain.EventOrigin("customer").String(),
 			Type:        customerdomain.CustomerCreatedEventType.String(),
 			TypeVersion: "1.0.0",
-			State:       event.EventStateCreated.String(),
+			State:       event.EventStateReady.String(),
 			CreatedAt:   time.Now().UTC(),
 			ScheduledAt: time.Now().UTC(),
 			Retry:       0,

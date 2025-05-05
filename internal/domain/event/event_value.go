@@ -16,10 +16,10 @@ func (e EventState) String() string {
 }
 
 const (
-	// EventStateCreated is the state of the event when it is created
-	EventStateCreated EventState = "created"
-	// EventStateCreatedRepeated is the state of the event when it is created and repeated
-	EventStateCreatedRepeated EventState = "created.repeated"
+	// EventStateReady is the state of the event when it is ready to be processed
+	EventStateReady EventState = "ready"
+	// EventStateProcessing is the state of the event when it is being processed
+	EventStateProcessing EventState = "processing"
 	// EventStateCompleted is the state of the event when it is completed
 	EventStateCompleted EventState = "completed"
 	// EventStateFailed is the state of the event when it is failed after all retries

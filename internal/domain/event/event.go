@@ -45,7 +45,7 @@ func NewBaseEvent(
 		Origin:      origin,
 		Type:        typeEvent,
 		TypeVersion: typeVersion,
-		State:       EventStateCreated.String(),
+		State:       EventStateReady.String(),
 		CreatedAt:   createdAt,
 		ScheduledAt: scheduledAt,
 		Retry:       0,
