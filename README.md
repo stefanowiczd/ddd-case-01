@@ -10,7 +10,7 @@ I also tried to leveraged advanced AI-powered coding assistance tools to enhance
 - Create bank application using Golang and DDD
 
 ## Assumptions
-- Use DDD for as a system architecture
+- Use DDD for the system architecture
 - Use tools improving software development experience:
   - [sqlc](https://docs.sqlc.dev/en/latest/) - create Goland code from SQL
   - [gomock](https://github.com/uber-go/mock) - create unit testing mocks
