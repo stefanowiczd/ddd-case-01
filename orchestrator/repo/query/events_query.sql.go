@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const findEventByID = `-- name: FindEventByID :one
+SELECT id, context_id, event_origin, event_type, event_type_version, event_state, created_at, scheduled_at, started_at, completed_at, retry, max_retry, event_data FROM events
+WHERE id = $1
+`
+
+func (q *Queries) FindEventByID(ctx context.Context, id pgtype.UUID) (Event, error) {
+	row := q.db.QueryRow(ctx, findEventByID, id)
+	var i Event
+	err := row.Scan(
+		&i.ID,
+		&i.ContextID,
+		&i.EventOrigin,
+		&i.EventType,
+		&i.EventTypeVersion,
+		&i.EventState,
+		&i.CreatedAt,
+		&i.ScheduledAt,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.Retry,
+		&i.MaxRetry,
+		&i.EventData,
+	)
+	return i, err
+}
+
 const findEvents = `-- name: FindEvents :many
 SELECT id, context_id, event_origin, event_type, event_type_version, event_state, created_at, scheduled_at, started_at, completed_at, retry, max_retry, event_data FROM events
 ORDER BY scheduled_at DESC
@@ -50,59 +76,21 @@ func (q *Queries) FindEvents(ctx context.Context) ([]Event, error) {
 	return items, nil
 }
 
-const findEventsByOrigin = `-- name: FindEventsByOrigin :many
-SELECT id, context_id, event_origin, event_type, event_type_version, event_state, created_at, scheduled_at, started_at, completed_at, retry, max_retry, event_data FROM events
-WHERE event_origin = $1
-ORDER BY scheduled_at DESC
-`
-
-func (q *Queries) FindEventsByOrigin(ctx context.Context, eventOrigin string) ([]Event, error) {
-	rows, err := q.db.Query(ctx, findEventsByOrigin, eventOrigin)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Event
-	for rows.Next() {
-		var i Event
-		if err := rows.Scan(
-			&i.ID,
-			&i.ContextID,
-			&i.EventOrigin,
-			&i.EventType,
-			&i.EventTypeVersion,
-			&i.EventState,
-			&i.CreatedAt,
-			&i.ScheduledAt,
-			&i.StartedAt,
-			&i.CompletedAt,
-			&i.Retry,
-			&i.MaxRetry,
-			&i.EventData,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const findEventsByOriginAndStatus = `-- name: FindEventsByOriginAndStatus :many
 SELECT id, context_id, event_origin, event_type, event_type_version, event_state, created_at, scheduled_at, started_at, completed_at, retry, max_retry, event_data FROM events
 WHERE event_origin = $1 AND event_state = $2
 ORDER BY scheduled_at DESC
+LIMIT ($3)
 `
 
 type FindEventsByOriginAndStatusParams struct {
 	EventOrigin string
 	EventState  string
+	Limit       int32
 }
 
 func (q *Queries) FindEventsByOriginAndStatus(ctx context.Context, arg FindEventsByOriginAndStatusParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, findEventsByOriginAndStatus, arg.EventOrigin, arg.EventState)
+	rows, err := q.db.Query(ctx, findEventsByOriginAndStatus, arg.EventOrigin, arg.EventState, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -135,18 +123,106 @@ func (q *Queries) FindEventsByOriginAndStatus(ctx context.Context, arg FindEvent
 	return items, nil
 }
 
-const setEventState = `-- name: SetEventState :exec
+const findProcessableEvents = `-- name: FindProcessableEvents :many
+SELECT id, context_id, event_origin, event_type, event_type_version, event_state, created_at, scheduled_at, started_at, completed_at, retry, max_retry, event_data FROM events
+WHERE event_state = 'ready'
+ORDER BY scheduled_at DESC
+LIMIT ($1)
+`
+
+func (q *Queries) FindProcessableEvents(ctx context.Context, limit int32) ([]Event, error) {
+	rows, err := q.db.Query(ctx, findProcessableEvents, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Event
+	for rows.Next() {
+		var i Event
+		if err := rows.Scan(
+			&i.ID,
+			&i.ContextID,
+			&i.EventOrigin,
+			&i.EventType,
+			&i.EventTypeVersion,
+			&i.EventState,
+			&i.CreatedAt,
+			&i.ScheduledAt,
+			&i.StartedAt,
+			&i.CompletedAt,
+			&i.Retry,
+			&i.MaxRetry,
+			&i.EventData,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateEventCompletion = `-- name: UpdateEventCompletion :exec
 UPDATE events
-SET event_state = $2
+SET completed_at = CURRENT_TIMESTAMP,
+    event_state = 'completed'
 WHERE id = $1
 `
 
-type SetEventStateParams struct {
-	ID         pgtype.UUID
-	EventState string
+func (q *Queries) UpdateEventCompletion(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, updateEventCompletion, id)
+	return err
 }
 
-func (q *Queries) SetEventState(ctx context.Context, arg SetEventStateParams) error {
-	_, err := q.db.Exec(ctx, setEventState, arg.ID, arg.EventState)
+const updateEventRetry = `-- name: UpdateEventRetry :exec
+UPDATE events
+SET retry = retry + 1,
+    event_state = CASE
+        WHEN retry + 1 >= max_retry THEN 'failed'
+        ELSE 'ready'
+    END,
+    scheduled_at = CASE
+        WHEN retry + 1 < max_retry THEN CURRENT_TIMESTAMP + ($2 * INTERVAL '1 minute')
+        ELSE scheduled_at
+    END,
+    completed_at = CASE
+        WHEN retry + 1 >= max_retry THEN CURRENT_TIMESTAMP
+    END
+WHERE id = $1
+`
+
+type UpdateEventRetryParams struct {
+	ID            pgtype.UUID
+	RetryInterval interface{}
+}
+
+func (q *Queries) UpdateEventRetry(ctx context.Context, arg UpdateEventRetryParams) error {
+	_, err := q.db.Exec(ctx, updateEventRetry, arg.ID, arg.RetryInterval)
+	return err
+}
+
+const updateEventStart = `-- name: UpdateEventStart :exec
+UPDATE events
+SET started_at = CURRENT_TIMESTAMP,
+    event_state = 'processing'
+WHERE id = $1
+`
+
+func (q *Queries) UpdateEventStart(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, updateEventStart, id)
+	return err
+}
+
+const updateEventStartedAt = `-- name: UpdateEventStartedAt :exec
+UPDATE events
+SET started_at = CURRENT_TIMESTAMP,
+    event_state = 'processing'
+WHERE id = $1
+`
+
+func (q *Queries) UpdateEventStartedAt(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, updateEventStartedAt, id)
 	return err
 }
