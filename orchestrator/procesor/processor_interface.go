@@ -10,6 +10,8 @@ import (
 	eventdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 )
 
+//go:generate mockgen -destination=./mock/processor_mock.go -package=mock -source=./processor_interface.go
+
 type BaseEvent interface {
 	GetID() uuid.UUID
 	GetOrigin() string
