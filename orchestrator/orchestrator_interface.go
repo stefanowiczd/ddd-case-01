@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+//go:generate mockgen -destination=./mock/orchestrator_mock.go -package=mock -source=./orchestrator_interface.go
+
 // BaseEvent represents a domain event
 type BaseEvent interface {
 	// GetID returns the unique identifier of the event
@@ -47,3 +49,9 @@ type BaseEvent interface {
 	// GetEventData returns the event data
 	GetEventData() []byte
 }
+
+type OrchestratorRepository interface{}
+
+type AccountRepository interface{}
+
+type CustomerRepository interface{}

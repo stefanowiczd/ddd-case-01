@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/google/uuid"
-	"github.com/stefanowiczd/ddd-case-01/orchestrator/procesor/mock"
+	"github.com/stefanowiczd/ddd-case-01/orchestrator/application/processor/mock"
 )
 
 func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {

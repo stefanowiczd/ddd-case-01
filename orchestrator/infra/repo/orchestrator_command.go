@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
-	"github.com/stefanowiczd/ddd-case-01/orchestrator/repo/query"
+	"github.com/stefanowiczd/ddd-case-01/orchestrator/infra/repo/query"
 )
 
 // UpdateEventStart updates the event at start up

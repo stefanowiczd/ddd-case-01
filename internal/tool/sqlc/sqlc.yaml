@@ -10,9 +10,9 @@ sql:
         sql_package: "pgx/v5"
   - engine: "postgresql"
     schema: "../../infra/db/schema/0000_events_table.sql" # TODO: could be done better...
-    queries:  "../../../orchestrator/db/events_query.sql"
+    queries:  "../../../orchestrator/infra/db/events_query.sql"
     gen:
       go:
-        out: "../../../orchestrator/repo/query"
+        out: "../../../orchestrator/infra/repo/query"
         package: "query"
         sql_package: "pgx/v5"

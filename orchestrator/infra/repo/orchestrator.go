@@ -3,7 +3,7 @@ package repo
 import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/stefanowiczd/ddd-case-01/orchestrator/repo/query"
+	"github.com/stefanowiczd/ddd-case-01/orchestrator/infra/repo/query"
 )
 
 // OrchestratorRepository is the repository for the orchestrator that handles the event database operations

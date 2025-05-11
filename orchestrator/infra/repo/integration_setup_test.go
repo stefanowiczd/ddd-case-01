@@ -19,7 +19,7 @@ func setupTestDB(t *testing.T, keepContainer bool) (*pgxpool.Pool, string) {
 	ctx := context.Background()
 
 	// Get the absolute path to the schema directory
-	schemaDir, err := filepath.Abs("../../internal/infra/db/schema")
+	schemaDir, err := filepath.Abs("../../../internal/infra/db/schema")
 	require.NoError(t, err)
 
 	// Get the absolute path to the data directory with test data imported at startup

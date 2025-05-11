@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	eventdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/event"
-	"github.com/stefanowiczd/ddd-case-01/orchestrator/repo/query"
+	"github.com/stefanowiczd/ddd-case-01/orchestrator/infra/repo/query"
 )
 
 // FindAllEvents finds all events
