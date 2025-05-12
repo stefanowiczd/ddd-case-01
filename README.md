@@ -48,8 +48,13 @@ I also tried to leveraged advanced AI-powered coding assistance tools to enhance
 │   │   └── stream/       // n.a.
 │   └── tool/
 │       └── sqlc/         // SQLC configuration
-├── orchestrator/         // t.b.d. Orchestrator responsible for events processing
-
+│
+└── orchestrator/         // Orchestrator responsible for events processing
+    ├── application
+    │   └── processor     // Processors specialized in handling dedicated events
+    └── infra
+        ├── db/           // Queries definition for the events table
+        └── repo/         // Golang code generated with by SQLC related to DB operations
 ```
 
 ### Core Domains 
