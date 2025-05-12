@@ -2,8 +2,11 @@ package repo
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	eventdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/event"
@@ -14,7 +17,7 @@ import (
 func (r *OrchestratorRepository) FindAllEvents(ctx context.Context) ([]*eventdomain.BaseEvent, error) {
 	events, err := r.Q.FindEvents(ctx)
 	if err != nil {
-		return nil, err
+		return []*eventdomain.BaseEvent{}, fmt.Errorf("finding all events: %w", err)
 	}
 
 	orchestratorEvents := make([]*eventdomain.BaseEvent, len(events))
@@ -43,7 +46,7 @@ func (r *OrchestratorRepository) FindAllEvents(ctx context.Context) ([]*eventdom
 func (r *OrchestratorRepository) FindProcessableEvents(ctx context.Context, limit int) ([]*eventdomain.BaseEvent, error) {
 	ev, err := r.Q.FindProcessableEvents(ctx, int32(limit))
 	if err != nil {
-		return nil, err
+		return []*eventdomain.BaseEvent{}, fmt.Errorf("finding processable events: %w", err)
 	}
 
 	orchestratorEvents := make([]*eventdomain.BaseEvent, len(ev))
@@ -64,6 +67,7 @@ func (r *OrchestratorRepository) FindProcessableEvents(ctx context.Context, limi
 			Data:        ev.EventData,
 		}
 	}
+
 	return orchestratorEvents, nil
 }
 
@@ -75,7 +79,11 @@ func (r *OrchestratorRepository) findByOriginAndStatus(ctx context.Context, orig
 		Limit:       int32(limit),
 	})
 	if err != nil {
-		return nil, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []*eventdomain.BaseEvent{}, fmt.Errorf("finding events by origin and status: %w", eventdomain.ErrEventNotFound)
+		}
+
+		return []*eventdomain.BaseEvent{}, fmt.Errorf("finding events by origin and status: %w", err)
 	}
 
 	orchestratorEvents := make([]*eventdomain.BaseEvent, len(ev))
@@ -104,7 +112,11 @@ func (r *OrchestratorRepository) findByOriginAndStatus(ctx context.Context, orig
 func (r *OrchestratorRepository) findByID(ctx context.Context, id uuid.UUID) (*eventdomain.BaseEvent, error) {
 	ev, err := r.Q.FindEventByID(ctx, pgtype.UUID{Bytes: id, Valid: true})
 	if err != nil {
-		return &eventdomain.BaseEvent{}, err
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("finding event by id: %w", eventdomain.ErrEventNotFound)
+		}
+
+		return nil, fmt.Errorf("finding event by id: %w", err)
 	}
 
 	return &eventdomain.BaseEvent{

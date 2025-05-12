@@ -199,17 +199,17 @@ func (mr *MockOrchestratorRepositoryMockRecorder) UpdateEventCompletion(ctx, id 
 }
 
 // UpdateEventRetry mocks base method.
-func (m *MockOrchestratorRepository) UpdateEventRetry(ctx context.Context, id uuid.UUID, retry int) error {
+func (m *MockOrchestratorRepository) UpdateEventRetry(ctx context.Context, id uuid.UUID, retryInterval int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEventRetry", ctx, id, retry)
+	ret := m.ctrl.Call(m, "UpdateEventRetry", ctx, id, retryInterval)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateEventRetry indicates an expected call of UpdateEventRetry.
-func (mr *MockOrchestratorRepositoryMockRecorder) UpdateEventRetry(ctx, id, retry any) *gomock.Call {
+func (mr *MockOrchestratorRepositoryMockRecorder) UpdateEventRetry(ctx, id, retryInterval any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEventRetry", reflect.TypeOf((*MockOrchestratorRepository)(nil).UpdateEventRetry), ctx, id, retry)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEventRetry", reflect.TypeOf((*MockOrchestratorRepository)(nil).UpdateEventRetry), ctx, id, retryInterval)
 }
 
 // UpdateEventStart mocks base method.
@@ -265,7 +265,7 @@ func (m *MockAccountRepository) EXPECT() *MockAccountRepositoryMockRecorder {
 }
 
 // CreateAccount mocks base method.
-func (m *MockAccountRepository) CreateAccount(ctx context.Context, arg1 *account.Account) error {
+func (m *MockAccountRepository) CreateAccount(ctx context.Context, arg1 account.AccountCreatedEvent) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateAccount", ctx, arg1)
 	ret0, _ := ret[0].(error)
@@ -279,10 +279,10 @@ func (mr *MockAccountRepositoryMockRecorder) CreateAccount(ctx, arg1 any) *gomoc
 }
 
 // FindByID mocks base method.
-func (m *MockAccountRepository) FindByID(ctx context.Context, id uuid.UUID) (*account.Account, error) {
+func (m *MockAccountRepository) FindByID(ctx context.Context, id uuid.UUID) (account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByID", ctx, id)
-	ret0, _ := ret[0].(*account.Account)
+	ret0, _ := ret[0].(account.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -318,7 +318,7 @@ func (m *MockCustomerRepository) EXPECT() *MockCustomerRepositoryMockRecorder {
 }
 
 // CreateCustomer mocks base method.
-func (m *MockCustomerRepository) CreateCustomer(ctx context.Context, arg1 *customer.Customer) error {
+func (m *MockCustomerRepository) CreateCustomer(ctx context.Context, arg1 customer.CustomerCreatedEvent) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCustomer", ctx, arg1)
 	ret0, _ := ret[0].(error)

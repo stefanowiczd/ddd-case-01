@@ -38,7 +38,7 @@ type OrchestratorRepository interface {
 	// UpdateEventCompletion updates the event at completion
 	UpdateEventCompletion(ctx context.Context, id uuid.UUID) error
 	// UpdateEventRetry updates the event at retry
-	UpdateEventRetry(ctx context.Context, id uuid.UUID, retry int) error
+	UpdateEventRetry(ctx context.Context, id uuid.UUID, retryInterval int) error
 	// UpdateEventState updates the event state
 	UpdateEventState(ctx context.Context, id uuid.UUID, state string) error
 }
@@ -46,13 +46,13 @@ type OrchestratorRepository interface {
 // AccountRepository defines the interface for account operations
 type AccountRepository interface {
 	// CreateAccount creates a new account
-	CreateAccount(ctx context.Context, account *accountdomain.Account) error
-	// GetAccount returns an account by its ID
-	FindByID(ctx context.Context, id uuid.UUID) (*accountdomain.Account, error)
+	CreateAccount(ctx context.Context, account accountdomain.AccountCreatedEvent) error
+	// FindByID returns an account by its ID
+	FindByID(ctx context.Context, id uuid.UUID) (accountdomain.Account, error)
 }
 
 // CustomerRepository defines the interface for customer operations
 type CustomerRepository interface {
 	// CreateCustomer creates a new customer
-	CreateCustomer(ctx context.Context, customer *customerdomain.Customer) error
+	CreateCustomer(ctx context.Context, customer customerdomain.CustomerCreatedEvent) error
 }

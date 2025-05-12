@@ -2,6 +2,7 @@ package processor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -18,10 +19,10 @@ type (
 
 type accountEventType interface {
 	AccountCreatedEvent |
-		AccountFundsWithdrawnEvent |
-		AccountFundsDepositedEvent |
-		AccountBlockedEvent |
-		AccountUnblockedEvent
+	AccountFundsWithdrawnEvent |
+	AccountFundsDepositedEvent |
+	AccountBlockedEvent |
+	AccountUnblockedEvent
 }
 
 // AccountProcessor handles the processing of account-related events
@@ -44,12 +45,12 @@ func NewAccountProcessor(orcRepo OrchestratorRepository, accountRepo AccountRepo
 func (p *AccountProcessor) Process(ctx context.Context, event BaseEvent) error {
 	switch event.GetType() {
 	case accountdomain.AccountCreatedEventType.String():
-		event, err := UnmarshalEvent[AccountCreatedEvent](event.GetEventData())
+		accountEvent, err := UnmarshalEvent[AccountCreatedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal account created event: %w", err)
 		}
 
-		return p.handleAccountCreatedEvent(ctx, event.Data)
+		return p.handleAccountCreatedEvent(ctx, accountEvent.Data)
 
 	case accountdomain.AccountFundsWithdrawnEventType.String():
 		event, err := UnmarshalEvent[AccountFundsWithdrawnEvent](event.GetEventData())
@@ -93,8 +94,29 @@ func (p *AccountProcessor) Process(ctx context.Context, event BaseEvent) error {
 }
 
 // handleAccountCreated processes account creation events
-func (p *AccountProcessor) handleAccountCreatedEvent(_ context.Context, _ AccountCreatedEvent) error {
-	// Implement account creation logic
+func (p *AccountProcessor) handleAccountCreatedEvent(ctx context.Context, accountEvent AccountCreatedEvent) error {
+	errCreate := p.accountRepo.CreateAccount(ctx, accountEvent)
+	if errCreate != nil && errors.Is(errCreate, accountdomain.ErrAccountAlreadyExists) {
+		// Account was created successfully, update event completion didn't complete
+		if errUpdateCompletion := p.orcRepo.UpdateEventCompletion(ctx, accountEvent.ID); errUpdateCompletion != nil {
+			return fmt.Errorf("updating event completion when account event creation succeeded: %w", errUpdateCompletion)
+		}
+
+		return nil
+	}
+
+	if errCreate != nil {
+		if errUpdateRetry := p.orcRepo.UpdateEventRetry(ctx, accountEvent.ID, 1); errUpdateRetry != nil {
+			return fmt.Errorf("updating event retry after updating account created event failure: %w", errUpdateRetry)
+		}
+
+		return nil
+	}
+
+	if errUpdateCompletion := p.orcRepo.UpdateEventCompletion(ctx, accountEvent.ID); errUpdateCompletion != nil {
+		return fmt.Errorf("updating event completion: %w", errUpdateCompletion)
+	}
+
 	return nil
 }
 

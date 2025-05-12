@@ -9,11 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/google/uuid"
+	accountdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/account"
+	eventdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/event"
 	"github.com/stefanowiczd/ddd-case-01/orchestrator/application/processor/mock"
 )
 
@@ -21,6 +22,9 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 
 	type testCaseParams struct {
 		accountCreatedEvent func() *AccountCreatedEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
 	}
 
 	type testCaseExpected struct {
@@ -39,7 +43,7 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountCreatedEvent: func() *AccountCreatedEvent {
 					acc := &AccountCreatedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							Origin: "account",
 							Type:   "account.created",
 						},
@@ -54,6 +58,12 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 
 					return acc
 				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					return mock.NewMockOrchestratorRepository(ctrl)
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					return mock.NewMockAccountRepository(ctrl)
+				},
 			},
 			expected: testCaseExpected{
 				wantError: true,
@@ -64,7 +74,7 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountCreatedEvent: func() *AccountCreatedEvent {
 					acc := &AccountCreatedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							ID:          uuid.New(),
 							ContextID:   uuid.New(),
 							Origin:      "account",
@@ -92,6 +102,18 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 
 					return acc
 				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(nil)
+
+					return m
+				},
 			},
 			expected: testCaseExpected{
 				wantError: false,
@@ -105,8 +127,8 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 			defer ctrl.Finish()
 
 			processor := NewAccountProcessor(
-				mock.NewMockOrchestratorRepository(ctrl),
-				mock.NewMockAccountRepository(ctrl),
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
 			)
 
 			err := processor.Process(context.Background(), testCase.params.accountCreatedEvent())
@@ -140,7 +162,7 @@ func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 			params: testCaseParams{
 				accountFundsWithdrawnEvent: func() *AccountFundsWithdrawnEvent {
 					acc := &AccountFundsWithdrawnEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							Origin: "account",
 							Type:   "account.funds.withdrawn",
 						},
@@ -165,7 +187,7 @@ func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 			params: testCaseParams{
 				accountFundsWithdrawnEvent: func() *AccountFundsWithdrawnEvent {
 					acc := &AccountFundsWithdrawnEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							ID:          uuid.New(),
 							ContextID:   uuid.New(),
 							Origin:      "account",
@@ -240,7 +262,7 @@ func TestAccountProcessor_Process_AccountFundsDepositedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountFundsDepositedEvent: func() *AccountFundsDepositedEvent {
 					acc := &AccountFundsDepositedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							Origin: "account",
 							Type:   "account.funds.deposited",
 						},
@@ -265,7 +287,7 @@ func TestAccountProcessor_Process_AccountFundsDepositedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountFundsDepositedEvent: func() *AccountFundsDepositedEvent {
 					acc := &AccountFundsDepositedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							ID:          uuid.New(),
 							ContextID:   uuid.New(),
 							Origin:      "account",
@@ -340,7 +362,7 @@ func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountBlockedEvent: func() *AccountBlockedEvent {
 					acc := &AccountBlockedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							Origin: "account",
 							Type:   "account.blocked",
 						},
@@ -365,7 +387,7 @@ func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountBlockedEvent: func() *AccountBlockedEvent {
 					acc := &AccountBlockedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							ID:          uuid.New(),
 							ContextID:   uuid.New(),
 							Origin:      "account",
@@ -439,7 +461,7 @@ func TestAccountProcessor_Process_AccountUnblockedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountUnblockedEvent: func() *AccountUnblockedEvent {
 					acc := &AccountUnblockedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							Origin: "account",
 							Type:   "account.unblocked",
 						},
@@ -464,7 +486,7 @@ func TestAccountProcessor_Process_AccountUnblockedEvent(t *testing.T) {
 			params: testCaseParams{
 				accountUnblockedEvent: func() *AccountUnblockedEvent {
 					acc := &AccountUnblockedEvent{
-						BaseEvent: event.BaseEvent{
+						BaseEvent: eventdomain.BaseEvent{
 							ID:          uuid.New(),
 							ContextID:   uuid.New(),
 							Origin:      "account",
@@ -519,7 +541,7 @@ func TestAccountProcessor_Process_AccountUnblockedEvent(t *testing.T) {
 
 func TestAccountProcessor_Process_UnknownEvent(t *testing.T) {
 	type testCaseParams struct {
-		unknownEvent func() *event.BaseEvent
+		unknownEvent func() *eventdomain.BaseEvent
 
 		orcRepo func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
 	}
@@ -538,8 +560,8 @@ func TestAccountProcessor_Process_UnknownEvent(t *testing.T) {
 		{
 			name: "shouldn't process unknown event - internal error",
 			params: testCaseParams{
-				unknownEvent: func() *event.BaseEvent {
-					return &event.BaseEvent{
+				unknownEvent: func() *eventdomain.BaseEvent {
+					return &eventdomain.BaseEvent{
 						ID: uuid.New(),
 					}
 				},
@@ -557,8 +579,8 @@ func TestAccountProcessor_Process_UnknownEvent(t *testing.T) {
 		{
 			name: "should process unknown event",
 			params: testCaseParams{
-				unknownEvent: func() *event.BaseEvent {
-					return &event.BaseEvent{
+				unknownEvent: func() *eventdomain.BaseEvent {
+					return &eventdomain.BaseEvent{
 						ID: uuid.New(),
 					}
 				},
@@ -588,6 +610,284 @@ func TestAccountProcessor_Process_UnknownEvent(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
+
+func TestAccountProcessor_handleAccountCreatedEvent(t *testing.T) {
+	type testCaseParams struct {
+		accountCreatedEvent func() AccountCreatedEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
+	}
+
+	type testCaseExpected struct {
+		wantError bool
+	}
+
+	type testCase struct {
+		name     string
+		params   testCaseParams
+		expected testCaseExpected
+	}
+
+	testCases := []testCase{
+		{
+			name: "shouldn't process account created event - CreateAccount returns internal error, UpdateEventRetry returns nil",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account created event - CreateAccount returns internal error, UpdateEventRetry returns error",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account created event - CreateAccount returns internal nil, UpdateEventCompletion returns error",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(nil)
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "should process account created event - CreateAccount returns internal nil, UpdateEventCompletion returns nil",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(nil)
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "should process account created event - CreateAccount returns internal ErrAccountAlreadyExists, UpdateEventCompletion returns internal error",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountAlreadyExists)
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "should process account created event - CreateAccount returns internal ErrAccountAlreadyExists, UpdateEventCompletion returns nil",
+			params: testCaseParams{
+				accountCreatedEvent: func() AccountCreatedEvent {
+					return AccountCreatedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.created",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						CustomerID:     uuid.New(),
+						InitialBalance: 1000,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountAlreadyExists)
+
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			processor := NewAccountProcessor(
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
+			)
+
+			err := processor.handleAccountCreatedEvent(context.Background(), testCase.params.accountCreatedEvent())
+			if testCase.expected.wantError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+
 		})
 	}
 }

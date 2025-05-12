@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -11,18 +12,17 @@ import (
 
 // UpdateEventStart updates the event at start up
 func (r *OrchestratorRepository) UpdateEventStart(ctx context.Context, id uuid.UUID) error {
-	err := r.Q.UpdateEventStart(ctx, pgtype.UUID{Bytes: id, Valid: true})
-	if err != nil {
-		return err
+	if err := r.Q.UpdateEventStart(ctx, pgtype.UUID{Bytes: id, Valid: true}); err != nil {
+		return fmt.Errorf("updating event start: %w", err)
 	}
+
 	return nil
 }
 
 // UpdateEventCompletion updates the event at completion
 func (r *OrchestratorRepository) UpdateEventCompletion(ctx context.Context, id uuid.UUID) error {
-	err := r.Q.UpdateEventCompletion(ctx, pgtype.UUID{Bytes: id, Valid: true})
-	if err != nil {
-		return err
+	if err := r.Q.UpdateEventCompletion(ctx, pgtype.UUID{Bytes: id, Valid: true}); err != nil {
+		return fmt.Errorf("updating event completion: %w", err)
 	}
 
 	return nil
@@ -30,12 +30,11 @@ func (r *OrchestratorRepository) UpdateEventCompletion(ctx context.Context, id u
 
 // UpdateEventRetry updates the event at retry
 func (r *OrchestratorRepository) UpdateEventRetry(ctx context.Context, id uuid.UUID, retry int) error {
-	err := r.Q.UpdateEventRetry(ctx, query.UpdateEventRetryParams{
+	if err := r.Q.UpdateEventRetry(ctx, query.UpdateEventRetryParams{
 		ID:            pgtype.UUID{Bytes: id, Valid: true},
 		RetryInterval: retry,
-	})
-	if err != nil {
-		return err
+	}); err != nil {
+		return fmt.Errorf("updating event retry: %w", err)
 	}
 
 	return nil
