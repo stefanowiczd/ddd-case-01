@@ -1,21 +1,11 @@
 package customer
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
-)
-
-var (
-	// ErrCustomerAlreadyExists is returned when a customer already exists
-	ErrCustomerAlreadyExists = errors.New("customer already exists")
-	// ErrCustomerNotFound is returned when a customer is not found
-	ErrCustomerNotFound = errors.New("customer not found")
-	// ErrCustomerEventNotFound is returned when a customer event is not found
-	ErrCustomerEventNotFound = errors.New("customer event not found")
 )
 
 // EventOrigin it is used to identify the source of the event

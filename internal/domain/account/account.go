@@ -1,19 +1,11 @@
 package account
 
 import (
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/stefanowiczd/ddd-case-01/internal/domain/event"
-)
-
-var (
-	ErrInsufficientFunds    = errors.New("insufficient funds")
-	ErrAccountNotFound      = errors.New("account not found")
-	ErrAccountEventNotFound = errors.New("account event not found")
-	ErrAccountAlreadyExists = errors.New("account already exists")
 )
 
 type EventOrigin = event.EventOrigin
