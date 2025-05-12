@@ -11,13 +11,6 @@ import (
 	customerdomain "github.com/stefanowiczd/ddd-case-01/internal/domain/customer"
 )
 
-var (
-	// ErrCustomerNotFound is returned when an customer is not found.
-	ErrCustomerNotFound = errors.New("customer not found")
-	// ErrCustomerAlreadyExists is returned when a customer already exists.
-	ErrCustomerAlreadyExists = errors.New("customer already exists")
-)
-
 type Customer = customerdomain.Customer
 type Address = customerdomain.Address
 
