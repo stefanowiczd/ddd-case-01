@@ -6,8 +6,8 @@ import (
 
 // Account errors
 var (
-	// ErrInsufficientFunds is returned when a customer has insufficient funds
-	ErrInsufficientFunds = errors.New("insufficient funds")
+	// ErrAccountInsufficientFunds is returned when a customer has insufficient funds
+	ErrAccountInsufficientFunds = errors.New("insufficient funds")
 	// ErrAccountNotFound is returned when an account is not found
 	ErrAccountNotFound = errors.New("account not found")
 	// ErrAccountAlreadyExists is returned when an account already exists

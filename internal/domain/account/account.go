@@ -138,7 +138,7 @@ func (a *Account) Deposit(amount float64) {
 
 	origin := EventOrigin("account")
 
-	a.addEvent(&FundsDepositedEvent{
+	a.addEvent(&AccountFundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.New(),
 			ContextID:   a.ID,
@@ -168,7 +168,7 @@ func (a *Account) Withdraw(amount float64) error {
 
 	origin := EventOrigin("account")
 
-	a.addEvent(&FundsWithdrawnEvent{
+	a.addEvent(&AccountFundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.New(),
 			ContextID:   a.ID,

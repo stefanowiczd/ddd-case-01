@@ -13,16 +13,16 @@ type AccountCreatedEvent struct {
 	InitialBalance float64   `json:"initial_balance"` // The initial balance of the account
 }
 
-// FundsDepositedEvent is emitted when funds are deposited into an account
-type FundsDepositedEvent struct {
+// AccountFundsDepositedEvent is emitted when funds are deposited into an account
+type AccountFundsDepositedEvent struct {
 	event.BaseEvent
 	Amount   float64 `json:"amount"`   // The amount that was deposited
 	Balance  float64 `json:"balance" ` // The new balance after the deposit
 	Currency string  `json:"currency"` // The currency of the account
 }
 
-// FundsWithdrawnEvent is emitted when funds are withdrawn from an account
-type FundsWithdrawnEvent struct {
+// AccountFundsWithdrawnEvent is emitted when funds are withdrawn from an account
+type AccountFundsWithdrawnEvent struct {
 	event.BaseEvent
 	Amount   float64 `json:"amount"`   // The amount that was withdrawn
 	Balance  float64 `json:"balance"`  // The new balance after the withdrawal

@@ -137,7 +137,7 @@ func Test_FundsWithdrawnEvent(t *testing.T) {
 	now := time.Now().UTC()
 	origin := EventOrigin("account")
 
-	event := &FundsWithdrawnEvent{
+	event := &AccountFundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   accountID,
@@ -161,7 +161,7 @@ func Test_FundsWithdrawnEvent(t *testing.T) {
 
 	event.Data = data
 
-	restoredEvent := &FundsWithdrawnEvent{}
+	restoredEvent := &AccountFundsWithdrawnEvent{}
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	compareCustomerBaseEvents(t, event, restoredEvent)
@@ -177,7 +177,7 @@ func Test_FundsDepositedEvent(t *testing.T) {
 	now := time.Now().UTC()
 	origin := EventOrigin("account")
 
-	event := &FundsDepositedEvent{
+	event := &AccountFundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          eventID,
 			ContextID:   accountID,
@@ -201,7 +201,7 @@ func Test_FundsDepositedEvent(t *testing.T) {
 
 	event.Data = data
 
-	restoredEvent := &FundsDepositedEvent{}
+	restoredEvent := &AccountFundsDepositedEvent{}
 	require.NoError(t, json.Unmarshal(event.GetEventData(), &restoredEvent))
 
 	compareCustomerBaseEvents(t, event, restoredEvent)
