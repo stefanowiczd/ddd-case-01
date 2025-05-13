@@ -39,44 +39,44 @@ func NewCustomerProcessor(orcRepo OrchestratorRepository, customerRepo CustomerR
 func (p *CustomerProcessor) Process(ctx context.Context, event BaseEvent) error {
 	switch event.GetType() {
 	case customerdomain.CustomerCreatedEventType.String():
-		event, err := UnmarshalEvent[CustomerCreatedEvent](event.GetEventData())
+		customerEvent, err := UnmarshalEvent[CustomerCreatedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal customer created event: %w", err)
 		}
 
-		return p.handleCustomerCreatedEvent(ctx, event.Data)
+		return p.handleCustomerCreatedEvent(ctx, customerEvent.Data)
 
 	case customerdomain.CustomerActivatedEventType.String():
-		event, err := UnmarshalEvent[CustomerActivatedEvent](event.GetEventData())
+		customerEvent, err := UnmarshalEvent[CustomerActivatedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal customer activated event: %w", err)
 		}
 
-		return p.handleCustomerActivatedEvent(ctx, event.Data)
+		return p.handleCustomerActivatedEvent(ctx, customerEvent.Data)
 
 	case customerdomain.CustomerDeactivatedEventType.String():
-		event, err := UnmarshalEvent[CustomerDeactivatedEvent](event.GetEventData())
+		customerEvent, err := UnmarshalEvent[CustomerDeactivatedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal customer deactivated event: %w", err)
 		}
 
-		return p.handleCustomerDeactivatedEvent(ctx, event.Data)
+		return p.handleCustomerDeactivatedEvent(ctx, customerEvent.Data)
 
 	case customerdomain.CustomerBlockedEventType.String():
-		event, err := UnmarshalEvent[CustomerBlockedEvent](event.GetEventData())
+		customerEvent, err := UnmarshalEvent[CustomerBlockedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal customer blocked event: %w", err)
 		}
 
-		return p.handleCustomerBlockedEvent(ctx, event.Data)
+		return p.handleCustomerBlockedEvent(ctx, customerEvent.Data)
 
 	case customerdomain.CustomerUnblockedEventType.String():
-		event, err := UnmarshalEvent[CustomerUnblockedEvent](event.GetEventData())
+		customerEvent, err := UnmarshalEvent[CustomerUnblockedEvent](event.GetEventData())
 		if err != nil {
 			return fmt.Errorf("unmarshal customer unblocked event: %w", err)
 		}
 
-		return p.handleCustomerUnblockedEvent(ctx, event.Data)
+		return p.handleCustomerUnblockedEvent(ctx, customerEvent.Data)
 
 	default:
 		if err := p.handleUnknownEvent(ctx, event.GetID()); err != nil {

@@ -265,17 +265,31 @@ func (m *MockAccountRepository) EXPECT() *MockAccountRepositoryMockRecorder {
 }
 
 // CreateAccount mocks base method.
-func (m *MockAccountRepository) CreateAccount(ctx context.Context, arg1 account.AccountCreatedEvent) error {
+func (m *MockAccountRepository) CreateAccount(ctx context.Context, accountEvent account.AccountCreatedEvent) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAccount", ctx, arg1)
+	ret := m.ctrl.Call(m, "CreateAccount", ctx, accountEvent)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateAccount indicates an expected call of CreateAccount.
-func (mr *MockAccountRepositoryMockRecorder) CreateAccount(ctx, arg1 any) *gomock.Call {
+func (mr *MockAccountRepositoryMockRecorder) CreateAccount(ctx, accountEvent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockAccountRepository)(nil).CreateAccount), ctx, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAccount", reflect.TypeOf((*MockAccountRepository)(nil).CreateAccount), ctx, accountEvent)
+}
+
+// DepositFunds mocks base method.
+func (m *MockAccountRepository) DepositFunds(ctx context.Context, accountEvent account.AccountFundsDepositedEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DepositFunds", ctx, accountEvent)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DepositFunds indicates an expected call of DepositFunds.
+func (mr *MockAccountRepositoryMockRecorder) DepositFunds(ctx, accountEvent any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DepositFunds", reflect.TypeOf((*MockAccountRepository)(nil).DepositFunds), ctx, accountEvent)
 }
 
 // FindByID mocks base method.
@@ -291,6 +305,20 @@ func (m *MockAccountRepository) FindByID(ctx context.Context, id uuid.UUID) (acc
 func (mr *MockAccountRepositoryMockRecorder) FindByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockAccountRepository)(nil).FindByID), ctx, id)
+}
+
+// WithdrawFunds mocks base method.
+func (m *MockAccountRepository) WithdrawFunds(ctx context.Context, accountEvent account.AccountFundsWithdrawnEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WithdrawFunds", ctx, accountEvent)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WithdrawFunds indicates an expected call of WithdrawFunds.
+func (mr *MockAccountRepositoryMockRecorder) WithdrawFunds(ctx, accountEvent any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithdrawFunds", reflect.TypeOf((*MockAccountRepository)(nil).WithdrawFunds), ctx, accountEvent)
 }
 
 // MockCustomerRepository is a mock of CustomerRepository interface.

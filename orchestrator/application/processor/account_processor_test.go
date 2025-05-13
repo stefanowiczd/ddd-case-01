@@ -144,6 +144,9 @@ func TestAccountProcessor_Process_AccountCreatedEvent(t *testing.T) {
 func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 	type testCaseParams struct {
 		accountFundsWithdrawnEvent func() *AccountFundsWithdrawnEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
 	}
 
 	type testCaseExpected struct {
@@ -176,6 +179,12 @@ func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 					acc.Data = data
 
 					return acc
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					return mock.NewMockOrchestratorRepository(ctrl)
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					return mock.NewMockAccountRepository(ctrl)
 				},
 			},
 			expected: testCaseExpected{
@@ -214,6 +223,16 @@ func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 
 					return acc
 				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
 			},
 			expected: testCaseExpected{
 				wantError: false,
@@ -227,8 +246,8 @@ func TestAccountProcessor_Process_AccountFundsWithdrawnEvent(t *testing.T) {
 			defer ctrl.Finish()
 
 			processor := NewAccountProcessor(
-				mock.NewMockOrchestratorRepository(ctrl),
-				mock.NewMockAccountRepository(ctrl),
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
 			)
 
 			err := processor.Process(context.Background(), testCase.params.accountFundsWithdrawnEvent())
@@ -887,7 +906,347 @@ func TestAccountProcessor_handleAccountCreatedEvent(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+		})
+	}
+}
 
+func TestAccountProcessor_handleAccountFundsWithdrawnEvent(t *testing.T) {
+	type testCaseParams struct {
+		accountFundsWithdrawnEvent func() AccountFundsWithdrawnEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
+	}
+
+	type testCaseExpected struct {
+		wantError bool
+	}
+
+	type testCase struct {
+		name     string
+		params   testCaseParams
+		expected testCaseExpected
+	}
+
+	testCases := []testCase{
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns ErrAccountInsufficientFunds error, UpdateEventState returns internal error",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountInsufficientFunds)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns ErrAccountInsufficientFunds error, UpdateEventState returns nil",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountInsufficientFunds)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns ErrAccountNotFound error, UpdateEventState returns internal error",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountNotFound)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns ErrAccountNotFound error, UpdateEventState returns nil",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountNotFound)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns internal error, UpdateEventRetry returns internal error",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns internal error, UpdateEventRetry returns nil",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account funds withdrawn event - WithdrawFunds returns nil, UpdateEventCompletion returns internal error",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "should process account funds withdrawn event - WithdrawFunds returns nil, UpdateEventCompletion returns nil",
+			params: testCaseParams{
+				accountFundsWithdrawnEvent: func() AccountFundsWithdrawnEvent {
+					return AccountFundsWithdrawnEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.funds.withdrawn",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+						Amount: 100,
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().WithdrawFunds(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			processor := NewAccountProcessor(
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
+			)
+
+			err := processor.handleAccountFundsWithdrawnEvent(
+				context.Background(),
+				testCase.params.accountFundsWithdrawnEvent(),
+			)
+
+			if testCase.expected.wantError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

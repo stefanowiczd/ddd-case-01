@@ -11,8 +11,8 @@ import (
 
 type (
 	AccountCreatedEvent        = accountdomain.AccountCreatedEvent
-	AccountFundsWithdrawnEvent = accountdomain.FundsWithdrawnEvent
-	AccountFundsDepositedEvent = accountdomain.FundsDepositedEvent
+	AccountFundsWithdrawnEvent = accountdomain.AccountFundsWithdrawnEvent
+	AccountFundsDepositedEvent = accountdomain.AccountFundsDepositedEvent
 	AccountBlockedEvent        = accountdomain.AccountBlockedEvent
 	AccountUnblockedEvent      = accountdomain.AccountUnblockedEvent
 )
@@ -120,8 +120,36 @@ func (p *AccountProcessor) handleAccountCreatedEvent(ctx context.Context, accoun
 	return nil
 }
 
-func (p *AccountProcessor) handleAccountFundsWithdrawnEvent(_ context.Context, _ AccountFundsWithdrawnEvent) error {
-	// Implement account funds withdrawn logic
+func (p *AccountProcessor) handleAccountFundsWithdrawnEvent(ctx context.Context, accountEvent AccountFundsWithdrawnEvent) error {
+	errWithdraw := p.accountRepo.WithdrawFunds(ctx, accountEvent)
+	if errWithdraw != nil {
+		if errors.Is(errWithdraw, accountdomain.ErrAccountInsufficientFunds) {
+			if errUpdateRetry := p.orcRepo.UpdateEventState(ctx, accountEvent.ID, "failed"); errUpdateRetry != nil {
+				return fmt.Errorf("updating event state after insufficient funds condition: %w", errUpdateRetry)
+			}
+
+			return nil
+		}
+
+		if errors.Is(errWithdraw, accountdomain.ErrAccountNotFound) {
+			if errUpdateRetry := p.orcRepo.UpdateEventState(ctx, accountEvent.ID, "failed"); errUpdateRetry != nil {
+				return fmt.Errorf("updating event state after account not found condition: %w", errUpdateRetry)
+			}
+
+			return nil
+		}
+
+		if errUpdateRetry := p.orcRepo.UpdateEventRetry(ctx, accountEvent.ID, 1); errUpdateRetry != nil {
+			return fmt.Errorf("updating event retry after updating account funds withdrawn event failure: %w", errUpdateRetry)
+		}
+
+		return nil
+	}
+
+	if errUpdateCompletion := p.orcRepo.UpdateEventCompletion(ctx, accountEvent.ID); errUpdateCompletion != nil {
+		return fmt.Errorf("updating event completion: %w", errUpdateCompletion)
+	}
+
 	return nil
 }
 

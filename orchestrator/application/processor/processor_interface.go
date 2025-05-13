@@ -46,9 +46,13 @@ type OrchestratorRepository interface {
 // AccountRepository defines the interface for account operations
 type AccountRepository interface {
 	// CreateAccount creates a new account
-	CreateAccount(ctx context.Context, account accountdomain.AccountCreatedEvent) error
+	CreateAccount(ctx context.Context, accountEvent accountdomain.AccountCreatedEvent) error
 	// FindByID returns an account by its ID
 	FindByID(ctx context.Context, id uuid.UUID) (accountdomain.Account, error)
+	// WithdrawFunds withdraws funds from an account
+	WithdrawFunds(ctx context.Context, accountEvent accountdomain.AccountFundsWithdrawnEvent) error
+	// DepositFunds deposits funds into an account
+	DepositFunds(ctx context.Context, accountEvent accountdomain.AccountFundsDepositedEvent) error
 }
 
 // CustomerRepository defines the interface for customer operations
