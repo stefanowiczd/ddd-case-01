@@ -195,7 +195,7 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	repo := NewAccountEventRepository(pool)
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
 
-	event := accountdomain.FundsWithdrawnEvent{
+	event := accountdomain.AccountFundsWithdrawnEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
 			ContextID:   id,
@@ -226,7 +226,7 @@ func TestAccountEventRepository_FundsWithdrawnEvent(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, ev)
 
-	restoredEvent := accountdomain.FundsWithdrawnEvent{}
+	restoredEvent := accountdomain.AccountFundsWithdrawnEvent{}
 	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
 	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
@@ -256,7 +256,7 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	repo := NewAccountEventRepository(pool)
 	id := uuid.MustParse("00000000-0000-0000-0000-000000000000")
 
-	event := accountdomain.FundsDepositedEvent{
+	event := accountdomain.AccountFundsDepositedEvent{
 		BaseEvent: event.BaseEvent{
 			ID:          uuid.MustParse("00000000-1111-2222-0000-000000000000"),
 			ContextID:   id,
@@ -288,7 +288,7 @@ func TestAccountEventRepository_FundsDepositedEvent(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, ev)
 
-	restoredEvent := accountdomain.FundsDepositedEvent{}
+	restoredEvent := accountdomain.AccountFundsDepositedEvent{}
 	require.NoError(t, json.Unmarshal(ev.GetEventData(), &restoredEvent))
 
 	require.Equal(t, event.GetID(), restoredEvent.GetID())

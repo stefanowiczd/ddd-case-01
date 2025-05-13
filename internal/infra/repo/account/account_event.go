@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -34,8 +35,8 @@ func (r *AccountEventRepository) CreateAccountEvent(ctx context.Context, eventOb
 	case *accountdomain.AccountCreatedEvent,
 		*accountdomain.AccountBlockedEvent,
 		*accountdomain.AccountUnblockedEvent,
-		*accountdomain.FundsWithdrawnEvent,
-		*accountdomain.FundsDepositedEvent:
+		*accountdomain.AccountFundsWithdrawnEvent,
+		*accountdomain.AccountFundsDepositedEvent:
 
 		tx, err := r.Conn.Begin(ctx)
 		if err != nil {
