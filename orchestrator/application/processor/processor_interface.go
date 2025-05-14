@@ -53,6 +53,8 @@ type AccountRepository interface {
 	WithdrawFunds(ctx context.Context, accountEvent accountdomain.AccountFundsWithdrawnEvent) error
 	// DepositFunds deposits funds into an account
 	DepositFunds(ctx context.Context, accountEvent accountdomain.AccountFundsDepositedEvent) error
+	// BlockAccount blocks an account
+	BlockAccount(ctx context.Context, accountEvent accountdomain.AccountBlockedEvent) error
 }
 
 // CustomerRepository defines the interface for customer operations

@@ -264,6 +264,20 @@ func (m *MockAccountRepository) EXPECT() *MockAccountRepositoryMockRecorder {
 	return m.recorder
 }
 
+// BlockAccount mocks base method.
+func (m *MockAccountRepository) BlockAccount(ctx context.Context, accountEvent account.AccountBlockedEvent) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BlockAccount", ctx, accountEvent)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BlockAccount indicates an expected call of BlockAccount.
+func (mr *MockAccountRepositoryMockRecorder) BlockAccount(ctx, accountEvent any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockAccount", reflect.TypeOf((*MockAccountRepository)(nil).BlockAccount), ctx, accountEvent)
+}
+
 // CreateAccount mocks base method.
 func (m *MockAccountRepository) CreateAccount(ctx context.Context, accountEvent account.AccountCreatedEvent) error {
 	m.ctrl.T.Helper()

@@ -363,6 +363,9 @@ func TestAccountProcessor_Process_AccountFundsDepositedEvent(t *testing.T) {
 func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 	type testCaseParams struct {
 		accountBlockedEvent func() *AccountBlockedEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
 	}
 
 	type testCaseExpected struct {
@@ -395,6 +398,12 @@ func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 					acc.Data = data
 
 					return acc
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					return mock.NewMockOrchestratorRepository(ctrl)
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					return mock.NewMockAccountRepository(ctrl)
 				},
 			},
 			expected: testCaseExpected{
@@ -432,6 +441,16 @@ func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 
 					return acc
 				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
 			},
 			expected: testCaseExpected{
 				wantError: false,
@@ -445,8 +464,8 @@ func TestAccountProcessor_Process_AccountBlockedEvent(t *testing.T) {
 			defer ctrl.Finish()
 
 			processor := NewAccountProcessor(
-				mock.NewMockOrchestratorRepository(ctrl),
-				mock.NewMockAccountRepository(ctrl),
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
 			)
 
 			err := processor.Process(context.Background(), testCase.params.accountBlockedEvent())
@@ -1240,6 +1259,256 @@ func TestAccountProcessor_handleAccountFundsWithdrawnEvent(t *testing.T) {
 			err := processor.handleAccountFundsWithdrawnEvent(
 				context.Background(),
 				testCase.params.accountFundsWithdrawnEvent(),
+			)
+
+			if testCase.expected.wantError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestAccountProcessor_handleAccountBlockedEvent(t *testing.T) {
+	type testCaseParams struct {
+		accountBlockedEvent func() AccountBlockedEvent
+
+		mockOrchestratorRepository func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository
+		mockAccountRepository      func(ctrl *gomock.Controller) *mock.MockAccountRepository
+	}
+
+	type testCaseExpected struct {
+		wantError bool
+	}
+
+	type testCase struct {
+		name     string
+		params   testCaseParams
+		expected testCaseExpected
+	}
+
+	testCases := []testCase{
+		{
+			name: "shouldn't process account blocked event - BlockAccount returns ErrAccountNotFound error, UpdateEventState returns internal error",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.blocked",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountNotFound)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account blocked event - BlockAccount returns ErrAccountNotFound error, UpdateEventState returns nil",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.blocked",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventState(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(accountdomain.ErrAccountNotFound)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account blocked event - BlockAccount returns internal error, UpdateEventRetry returns internal error",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.blocked",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "shouldn't process account blocked event - BlockAccount returns internal error, UpdateEventRetry returns nil",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.blocked",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventRetry(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+		{
+			name: "shouldn't process account blocked event - BlockAccount returns nil, UpdateEventCompletion returns internal error",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID:          uuid.New(),
+							Origin:      "account",
+							Type:        "account.blocked",
+							TypeVersion: "1.0.0",
+							State:       "created",
+							CreatedAt:   time.Now().UTC(),
+							ScheduledAt: time.Time{},
+							StartedAt:   time.Time{},
+							CompletedAt: time.Time{},
+							Retry:       0,
+							MaxRetry:    3,
+							Data:        nil,
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(errors.New("internal error"))
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: true,
+			},
+		},
+		{
+			name: "should process account blocked event - BlockAccount returns nil, UpdateEventCompletion returns nil",
+			params: testCaseParams{
+				accountBlockedEvent: func() AccountBlockedEvent {
+					return AccountBlockedEvent{
+						BaseEvent: eventdomain.BaseEvent{
+							ID: uuid.New(),
+						},
+					}
+				},
+				mockOrchestratorRepository: func(ctrl *gomock.Controller) *mock.MockOrchestratorRepository {
+					m := mock.NewMockOrchestratorRepository(ctrl)
+					m.EXPECT().UpdateEventCompletion(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+				mockAccountRepository: func(ctrl *gomock.Controller) *mock.MockAccountRepository {
+					m := mock.NewMockAccountRepository(ctrl)
+					m.EXPECT().BlockAccount(gomock.Any(), gomock.Any()).Return(nil)
+					return m
+				},
+			},
+			expected: testCaseExpected{
+				wantError: false,
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			processor := NewAccountProcessor(
+				testCase.params.mockOrchestratorRepository(ctrl),
+				testCase.params.mockAccountRepository(ctrl),
+			)
+
+			err := processor.handleAccountBlockedEvent(
+				context.Background(),
+				testCase.params.accountBlockedEvent(),
 			)
 
 			if testCase.expected.wantError {

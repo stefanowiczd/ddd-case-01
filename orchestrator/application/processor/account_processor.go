@@ -19,10 +19,10 @@ type (
 
 type accountEventType interface {
 	AccountCreatedEvent |
-	AccountFundsWithdrawnEvent |
-	AccountFundsDepositedEvent |
-	AccountBlockedEvent |
-	AccountUnblockedEvent
+		AccountFundsWithdrawnEvent |
+		AccountFundsDepositedEvent |
+		AccountBlockedEvent |
+		AccountUnblockedEvent
 }
 
 // AccountProcessor handles the processing of account-related events
@@ -159,8 +159,28 @@ func (p *AccountProcessor) handleAccountFundsDepositedEvent(_ context.Context, _
 }
 
 // handleAccountBlocked processes account blocked events
-func (p *AccountProcessor) handleAccountBlockedEvent(_ context.Context, _ AccountBlockedEvent) error {
-	// Implement account deletion logic
+func (p *AccountProcessor) handleAccountBlockedEvent(ctx context.Context, accountEvent AccountBlockedEvent) error {
+	errBlock := p.accountRepo.BlockAccount(ctx, accountEvent)
+	if errBlock != nil {
+		if errors.Is(errBlock, accountdomain.ErrAccountNotFound) {
+			if errUpdateRetry := p.orcRepo.UpdateEventState(ctx, accountEvent.ID, "failed"); errUpdateRetry != nil {
+				return fmt.Errorf("updating event state after account not found condition: %w", errUpdateRetry)
+			}
+
+			return nil
+		}
+
+		if errUpdateRetry := p.orcRepo.UpdateEventRetry(ctx, accountEvent.ID, 1); errUpdateRetry != nil {
+			return fmt.Errorf("updating event retry after updating account blocked event failure: %w", errUpdateRetry)
+		}
+
+		return nil
+	}
+
+	if errUpdateCompletion := p.orcRepo.UpdateEventCompletion(ctx, accountEvent.ID); errUpdateCompletion != nil {
+		return fmt.Errorf("updating event completion: %w", errUpdateCompletion)
+	}
+
 	return nil
 }
 
